@@ -31,24 +31,74 @@ from reportlab.platypus import (
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+_FONTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+_EMOJI_FONT_PATH = os.path.join(_FONTS_DIR, "NotoEmoji-Regular.ttf")
+_EMOJI_FONT_URLS = [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf",
+    "https://github.com/google/fonts/raw/main/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf",
+]
+_EMOJI_FONT_NAME = "NotoEmoji"
+
 _EMOJI_RE = re.compile(
     "["
     "\U0001F600-\U0001F64F"  # emoticons
     "\U0001F300-\U0001F5FF"  # symbols & pictographs
     "\U0001F680-\U0001F6FF"  # transport & map
     "\U0001F1E0-\U0001F1FF"  # flags
+    "\U0001F900-\U0001F9FF"  # supplemental symbols
+    "\U0001FA00-\U0001FA6F"  # chess symbols
+    "\U0001FA70-\U0001FAFF"  # symbols extended-A
     "\U00002702-\U000027B0"  # dingbats
     "\U0000FE00-\U0000FE0F"  # variation selectors
     "\U0000200D"             # zero width joiner
     "\U000024C2-\U0001F251"
+    "\U00002600-\U000026FF"  # misc symbols
+    "\U00002300-\U000023FF"  # misc technical
+    "\U0000203C-\U00003299"  # CJK symbols, enclosed alphanumerics
     "]+",
     flags=re.UNICODE,
 )
 
+_emoji_font_registered = False
 
-def strip_emojis(text: str) -> str:
-    """Remove emoji characters that ReportLab's built-in fonts cannot render."""
-    return _EMOJI_RE.sub("", text).strip()
+
+def _ensure_emoji_font():
+    """Download Noto Emoji if needed and register it with ReportLab."""
+    global _emoji_font_registered
+    if _emoji_font_registered:
+        return
+    if not os.path.isfile(_EMOJI_FONT_PATH):
+        os.makedirs(_FONTS_DIR, exist_ok=True)
+        print("Downloading Noto Emoji font...")
+        import urllib.request
+        downloaded = False
+        for url in _EMOJI_FONT_URLS:
+            try:
+                urllib.request.urlretrieve(url, _EMOJI_FONT_PATH)
+                downloaded = True
+                break
+            except Exception:
+                continue
+        if not downloaded:
+            print("  ⚠ Could not download emoji font – emojis will be stripped.")
+            print("  Manual install: download NotoEmoji-Regular.ttf and place in fonts/")
+            return
+    try:
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        pdfmetrics.registerFont(TTFont(_EMOJI_FONT_NAME, _EMOJI_FONT_PATH))
+        _emoji_font_registered = True
+    except Exception:
+        print("  ⚠ Could not register emoji font – emojis will be stripped.")
+
+
+def process_emojis(text: str) -> str:
+    """Wrap emoji characters in <font> tags for ReportLab, or strip them."""
+    if _emoji_font_registered:
+        def _wrap(m):
+            return f'<font name="{_EMOJI_FONT_NAME}">{m.group(0)}</font>'
+        return _EMOJI_RE.sub(_wrap, text)
+    return _EMOJI_RE.sub("", text)
 
 
 # ── Horizontal rule ─────────────────────────────────────────────────────────
@@ -180,6 +230,8 @@ def md_to_flowables(md_text: str, styles) -> list:
 
 def build_pdf(cards: list[dict], output_path: str) -> None:
     """Generate the PDF with one page per card."""
+    _ensure_emoji_font()
+
     doc = SimpleDocTemplate(
         output_path,
         pagesize=A5,
@@ -251,10 +303,10 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
         # Title
         story.append(Paragraph(card["title"], styles["title"]))
 
-        # Labels (plain text, emojis stripped for PDF rendering)
+        # Labels (emojis rendered via Noto Emoji if available)
         labels = card.get("labels", [])
         if labels:
-            names = [strip_emojis(l.get("title", "")).strip() for l in labels]
+            names = [process_emojis(l.get("title", "")).strip() for l in labels]
             names = [n for n in names if n]
             story.append(Paragraph("  ·  ".join(names), styles["label"]))
         else:
@@ -265,15 +317,18 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
         # Assigned users (if any)
         users = card.get("assignedUsers", [])
         if users:
-            user_names = ", ".join(u.get("displayName", u.get("username", "?")) for u in users)
+            names = []
+            for u in users:
+                p = u.get("participant", {})
+                names.append(p.get("displayname") or p.get("displayName") or u.get("displayName") or "?")
             story.append(Paragraph(
-                f'<b>Assigned:</b> {user_names}',
+                f'<b>Zugewiesen an:</b> {", ".join(names)}',
                 styles["label"],
             ))
             story.append(Spacer(1, 2 * mm))
 
-        # Description (markdown → HTML → ReportLab), emojis stripped
-        desc = strip_emojis(card.get("description", ""))
+        # Description (markdown → HTML → ReportLab), emojis wrapped for rendering
+        desc = process_emojis(card.get("description", ""))
         story.extend(md_to_flowables(desc, styles))
 
         # Page break after each card (except the last)

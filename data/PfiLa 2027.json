@@ -73,48 +73,18 @@
           "title": "Pool",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1790339904,
+          "lastModified": 1790344415,
           "cards": [
             {
-              "id": 48,
-              "title": "Workshops",
-              "description": "Verschiedene Workshopideen sammeln\n\nVeranstalter suchen\n\nRotationsplan erstellen",
-              "color": null,
-              "descriptionPrev": null,
-              "stackId": 26,
-              "type": "plain",
-              "lastModified": 1780431477,
-              "lastEditor": null,
-              "createdAt": 1771957321,
-              "labels": [],
-              "assignedUsers": [],
-              "attachments": [],
-              "attachmentCount": 0,
-              "owner": "pascal.heiniger",
-              "order": 999,
-              "archived": false,
-              "done": null,
-              "duedate": null,
-              "startdate": null,
-              "notified": false,
-              "deletedAt": 0,
-              "commentsUnread": 0,
-              "commentsCount": 0,
-              "dependentCards": null,
-              "relatedStack": null,
-              "relatedBoard": null,
-              "ETag": "cf580501ad02e9ab8a7ff334091a398c"
-            },
-            {
               "id": 87,
-              "title": "VORLAGE",
-              "description": "# Übersicht\n\n|                   |                                                               |\n|-------------------|---------------------------------------------------------------|\n| **Titel**         | Workshop “Bibeln einfassen”                                   | \\\n|                   |                                                               | \\\n|                   | *evtl. weglassen weil oben*                                   |\n| **Bereich**       | ✝️ Geistlich  ·  ⛺️ Platz  ·  🎭 Thema  ·  ⛹🏽‍♂️ Aktivitäten | \\\n|                   |                                                               | \\\n|                   | *evtl. weglassen weil oben*                                   |\n| **Beitrag**       | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen        | \\\n|                   |                                                               | \\\n| *mehrere möglich* |                                                               |\n| **Aufwand**       | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                          |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n| Name        |  |\n|-------------|--|\n| Handynummer |  |\n| Email       |  |\n\n# Ansprechperson\n\n| Name        |  |\n|-------------|--|\n| Handynummer |  |\n| Email       |  |\n\n# Termine\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich keines…*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
+              "title": "VORLAGE - Workshop \"Bibel einfassen\"",
+              "description": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Ansprechperson\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "color": null,
-              "descriptionPrev": null,
+              "descriptionPrev": "# Übersicht\n\n|                   |                                                        |\n|-------------------|--------------------------------------------------------|\n| **Beitrag**       | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen | \\\n| *mehrere möglich* |                                                        |\n| **Aufwand**       | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |  |\n|-------------|--|\n| Name        |  |\n| Handynummer |  |\n| Email       |  |\n\n# Ansprechperson\n\n|             |  |\n|-------------|--|\n| Name        |  |\n| Handynummer |  |\n| Email       |  |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "stackId": 26,
               "type": "plain",
-              "lastModified": 1790339904,
-              "lastEditor": null,
+              "lastModified": 1790344415,
+              "lastEditor": "pascal.heiniger",
               "createdAt": 1786993313,
               "labels": [
                 {
@@ -127,7 +97,19 @@
                   "ETag": "f6bc98a390fb5325a0753aec00411e46"
                 }
               ],
-              "assignedUsers": [],
+              "assignedUsers": [
+                {
+                  "id": 7,
+                  "participant": {
+                    "primaryKey": "pascal.heiniger",
+                    "uid": "pascal.heiniger",
+                    "displayname": "Pascal Heiniger",
+                    "type": 0
+                  },
+                  "cardId": 87,
+                  "type": 0
+                }
+              ],
               "attachments": [],
               "attachmentCount": 0,
               "owner": "pascal.heiniger",
@@ -143,77 +125,95 @@
               "dependentCards": null,
               "relatedStack": null,
               "relatedBoard": null,
-              "ETag": "55a5512db3c5acf50e4f91af6801d0f2"
+              "ETag": "414eceb39cf94af5c1cfe5b413556ecb"
             }
           ],
           "order": 0,
           "isDoneColumn": false,
-          "ETag": "55a5512db3c5acf50e4f91af6801d0f2"
+          "ETag": "414eceb39cf94af5c1cfe5b413556ecb"
         },
         "27": {
           "id": 27,
-          "title": "Geplant (nicht gestartet)",
+          "title": "Zugewiesen (nicht gestartet)",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1770828000,
+          "lastModified": 1790344435,
           "cards": [
             {
-              "id": 42,
-              "title": "Geländespiel Pfingstsonntag Nachmittag vorbereiten",
-              "description": "Zielgruppe: alle TN.\n\nCheckliste-Vorschlag:\n- Spielidee wählen\n- Postenplan erstellen\n- Materialliste erstellen\n- Sicherheitsaspekte prüfen\n- Leitungsteam briefen",
+              "id": 93,
+              "title": "Test2",
+              "description": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Ansprechperson\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "color": null,
-              "descriptionPrev": null,
+              "descriptionPrev": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Ansprechperson\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "stackId": 27,
               "type": "plain",
-              "lastModified": 1770828000,
-              "lastEditor": null,
-              "createdAt": 1770828000,
-              "labels": [],
-              "assignedUsers": [],
-              "attachments": [],
-              "attachmentCount": 0,
-              "owner": "sven.gaechter",
-              "order": 0,
-              "archived": false,
-              "done": null,
-              "duedate": null,
-              "startdate": null,
-              "notified": false,
-              "deletedAt": 0,
-              "commentsUnread": 0,
-              "commentsCount": 0,
-              "dependentCards": null,
-              "relatedStack": null,
-              "relatedBoard": null,
-              "ETag": "44bd1dba9b7a98209da4022eec5ef280"
-            },
-            {
-              "id": 43,
-              "title": "Abendandacht Pfingstmontag gestalten",
-              "description": "Thema: Pfingsten / Gemeinschaft.\n\nCheckliste-Vorschlag:\n- Thema / Bibeltext wählen\n- Ablauf skizzieren\n- Lieder definieren\n- Material (Kerzen, Technik) klären\n- Verantwortliche Person vor Ort",
-              "color": null,
-              "descriptionPrev": null,
-              "stackId": 27,
-              "type": "plain",
-              "lastModified": 1770828000,
-              "lastEditor": null,
-              "createdAt": 1770828000,
+              "lastModified": 1790344435,
+              "lastEditor": "pascal.heiniger",
+              "createdAt": 1790344425,
               "labels": [
                 {
                   "id": 40,
                   "title": "✝️ Geistlich",
                   "color": "FFF2CC",
                   "boardId": 8,
-                  "cardId": 43,
+                  "cardId": 93,
                   "lastModified": 1786997848,
                   "ETag": "ac539cefdb903e2987df54a16d81dd20"
+                },
+                {
+                  "id": 41,
+                  "title": "🎭 Thema",
+                  "color": "D5E8D4",
+                  "boardId": 8,
+                  "cardId": 93,
+                  "lastModified": 1786997845,
+                  "ETag": "93da611ef564fac6225fe44ce642539b"
+                },
+                {
+                  "id": 43,
+                  "title": "⛺️ Platz",
+                  "color": "F8CECC",
+                  "boardId": 8,
+                  "cardId": 93,
+                  "lastModified": 1786997835,
+                  "ETag": "10036132e9048281764917e3203d8d39"
+                },
+                {
+                  "id": 44,
+                  "title": "⛹🏽‍♂️ Aktiväten",
+                  "color": "CCE5FF",
+                  "boardId": 8,
+                  "cardId": 93,
+                  "lastModified": 1786997829,
+                  "ETag": "2bf7db5590baccb0265b13009b9208af"
+                },
+                {
+                  "id": 59,
+                  "title": "🎨 Diverses",
+                  "color": "CCCCCC",
+                  "boardId": 8,
+                  "cardId": 93,
+                  "lastModified": 1786997943,
+                  "ETag": "f6bc98a390fb5325a0753aec00411e46"
                 }
               ],
-              "assignedUsers": [],
+              "assignedUsers": [
+                {
+                  "id": 8,
+                  "participant": {
+                    "primaryKey": "pascal.heiniger",
+                    "uid": "pascal.heiniger",
+                    "displayname": "Pascal Heiniger",
+                    "type": 0
+                  },
+                  "cardId": 93,
+                  "type": 0
+                }
+              ],
               "attachments": [],
               "attachmentCount": 0,
-              "owner": "sven.gaechter",
-              "order": 1,
+              "owner": "pascal.heiniger",
+              "order": 999,
               "archived": false,
               "done": null,
               "duedate": null,
@@ -225,207 +225,51 @@
               "dependentCards": null,
               "relatedStack": null,
               "relatedBoard": null,
-              "ETag": "44bd1dba9b7a98209da4022eec5ef280"
+              "ETag": "7d418e9bfe6273e33a5261ea5ea6c76d"
             }
           ],
           "order": 1,
           "isDoneColumn": false,
-          "ETag": "44bd1dba9b7a98209da4022eec5ef280"
+          "ETag": "7d418e9bfe6273e33a5261ea5ea6c76d"
         },
         "28": {
           "id": 28,
           "title": "In Arbeit",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1786993348,
-          "cards": [
-            {
-              "id": 44,
-              "title": "Menüplan erstellen",
-              "description": "Samstag: Frühstück, Mittagessen, Abendessen.\n\nCheckliste-Vorschlag:\n- Menüs festlegen\n- Einkaufsmenge schätzen\n- Allergien berücksichtigen\n- Küchendienst-Teams planen",
-              "color": null,
-              "descriptionPrev": null,
-              "stackId": 28,
-              "type": "plain",
-              "lastModified": 1786993348,
-              "lastEditor": null,
-              "createdAt": 1770828000,
-              "labels": [
-                {
-                  "id": 41,
-                  "title": "🎭 Thema",
-                  "color": "D5E8D4",
-                  "boardId": 8,
-                  "cardId": 44,
-                  "lastModified": 1786997845,
-                  "ETag": "93da611ef564fac6225fe44ce642539b"
-                }
-              ],
-              "assignedUsers": [],
-              "attachments": [],
-              "attachmentCount": 0,
-              "owner": "sven.gaechter",
-              "order": 0,
-              "archived": false,
-              "done": null,
-              "duedate": null,
-              "startdate": null,
-              "notified": false,
-              "deletedAt": 0,
-              "commentsUnread": 0,
-              "commentsCount": 0,
-              "dependentCards": null,
-              "relatedStack": null,
-              "relatedBoard": null,
-              "ETag": "763f54531d4c40aebc8e6255d548413f"
-            },
-            {
-              "id": 45,
-              "title": "Materialtransport Hinweg organisieren",
-              "description": "Transport Lager-Material zum Lagerplatz.\n\nCheckliste-Vorschlag:\n- Fahrzeuge organisieren\n- Fahrer:innen anfragen\n- Ladeplan erstellen\n- Treffpunkt und Zeiten kommunizieren",
-              "color": null,
-              "descriptionPrev": null,
-              "stackId": 28,
-              "type": "plain",
-              "lastModified": 1770828000,
-              "lastEditor": null,
-              "createdAt": 1770828000,
-              "labels": [
-                {
-                  "id": 43,
-                  "title": "⛺️ Platz",
-                  "color": "F8CECC",
-                  "boardId": 8,
-                  "cardId": 45,
-                  "lastModified": 1786997835,
-                  "ETag": "10036132e9048281764917e3203d8d39"
-                }
-              ],
-              "assignedUsers": [],
-              "attachments": [],
-              "attachmentCount": 0,
-              "owner": "sven.gaechter",
-              "order": 1,
-              "archived": false,
-              "done": null,
-              "duedate": null,
-              "startdate": null,
-              "notified": false,
-              "deletedAt": 0,
-              "commentsUnread": 0,
-              "commentsCount": 0,
-              "dependentCards": null,
-              "relatedStack": null,
-              "relatedBoard": null,
-              "ETag": "44bd1dba9b7a98209da4022eec5ef280"
-            }
-          ],
+          "lastModified": 1790343886,
           "order": 2,
           "isDoneColumn": false,
-          "ETag": "763f54531d4c40aebc8e6255d548413f"
+          "ETag": "483f5478aa362314b38a2cc97a10e269"
         },
         "29": {
           "id": 29,
           "title": "Blockiert / braucht Entscheidung",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1770828000,
-          "cards": [
-            {
-              "id": 46,
-              "title": "Info-Brief an Eltern finalisieren",
-              "description": "Eltern-Info mit Packliste, Zeiten, Kontaktpersonen.\n\nCheckliste-Vorschlag:\n- Entwurf schreiben\n- Kernteam-Freigabe holen\n- Kontaktinfos prüfen\n- PDF erstellen und teilen\n- Versandtermin planen",
-              "color": null,
-              "descriptionPrev": null,
-              "stackId": 29,
-              "type": "plain",
-              "lastModified": 1770828000,
-              "lastEditor": null,
-              "createdAt": 1770828000,
-              "labels": [
-                {
-                  "id": 44,
-                  "title": "⛹🏽‍♂️ Aktiväten",
-                  "color": "CCE5FF",
-                  "boardId": 8,
-                  "cardId": 46,
-                  "lastModified": 1786997829,
-                  "ETag": "2bf7db5590baccb0265b13009b9208af"
-                }
-              ],
-              "assignedUsers": [],
-              "attachments": [],
-              "attachmentCount": 0,
-              "owner": "sven.gaechter",
-              "order": 0,
-              "archived": false,
-              "done": null,
-              "duedate": null,
-              "startdate": null,
-              "notified": false,
-              "deletedAt": 0,
-              "commentsUnread": 0,
-              "commentsCount": 0,
-              "dependentCards": null,
-              "relatedStack": null,
-              "relatedBoard": null,
-              "ETag": "44bd1dba9b7a98209da4022eec5ef280"
-            }
-          ],
+          "lastModified": 1790343888,
           "order": 3,
           "isDoneColumn": false,
-          "ETag": "44bd1dba9b7a98209da4022eec5ef280"
+          "ETag": "b939ed36af0847efb295c261caaed6fa"
         },
         "30": {
           "id": 30,
           "title": "Erledigt",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1770828000,
-          "cards": [
-            {
-              "id": 47,
-              "title": "Kernteam-Rollen definieren",
-              "description": "Rollen im Kernteam festlegen:\n- Gesamtleitung\n- Finanzen\n- Sicherheit / Prävention\n- Sanität\n- Träger / Verband / Pfarrei",
-              "color": null,
-              "descriptionPrev": null,
-              "stackId": 30,
-              "type": "plain",
-              "lastModified": 1770828000,
-              "lastEditor": null,
-              "createdAt": 1770828000,
-              "labels": [],
-              "assignedUsers": [],
-              "attachments": [],
-              "attachmentCount": 0,
-              "owner": "sven.gaechter",
-              "order": 0,
-              "archived": false,
-              "done": null,
-              "duedate": null,
-              "startdate": null,
-              "notified": false,
-              "deletedAt": 0,
-              "commentsUnread": 0,
-              "commentsCount": 0,
-              "dependentCards": null,
-              "relatedStack": null,
-              "relatedBoard": null,
-              "ETag": "44bd1dba9b7a98209da4022eec5ef280"
-            }
-          ],
+          "lastModified": 1790343891,
           "order": 4,
           "isDoneColumn": false,
-          "ETag": "44bd1dba9b7a98209da4022eec5ef280"
+          "ETag": "29bc5c4d77c95bade1437fb51ac3b5f7"
         }
       },
       "activeSessions": [],
       "deletedAt": 0,
-      "lastModified": 1790339904,
+      "lastModified": 1790344435,
       "shareToken": null,
       "externalId": null,
       "settings": [],
-      "ETag": "55a5512db3c5acf50e4f91af6801d0f2"
+      "ETag": "7d418e9bfe6273e33a5261ea5ea6c76d"
     }
   ]
 }

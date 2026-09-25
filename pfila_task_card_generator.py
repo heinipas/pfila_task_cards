@@ -67,25 +67,36 @@ def _ensure_emoji_font():
     global _emoji_font_registered
     if _emoji_font_registered:
         return
-    if not os.path.isfile(_EMOJI_FONT_PATH):
-        os.makedirs(_FONTS_DIR, exist_ok=True)
-        print("Downloading Noto Emoji font...")
-        import urllib.request
-        downloaded = False
-        for url in _EMOJI_FONT_URLS:
-            try:
-                urllib.request.urlretrieve(url, _EMOJI_FONT_PATH)
-                downloaded = True
-                break
-            except Exception:
-                continue
-        if not downloaded:
-            print("  ⚠ Could not download emoji font – emojis will be stripped.")
-            print("  Manual install: download NotoEmoji-Regular.ttf and place in fonts/")
+
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    # 1. Try already-downloaded Noto Emoji
+    if os.path.isfile(_EMOJI_FONT_PATH):
+        try:
+            pdfmetrics.registerFont(TTFont(_EMOJI_FONT_NAME, _EMOJI_FONT_PATH))
+            _emoji_font_registered = True
             return
+        except Exception:
+            pass
+
+    # 2. Download Noto Emoji
+    os.makedirs(_FONTS_DIR, exist_ok=True)
+    print("Downloading Noto Emoji font...")
+    import urllib.request
+    downloaded = False
+    for url in _EMOJI_FONT_URLS:
+        try:
+            urllib.request.urlretrieve(url, _EMOJI_FONT_PATH)
+            downloaded = True
+            break
+        except Exception:
+            continue
+    if not downloaded:
+        print("  ⚠ Could not download emoji font – emojis will be stripped.")
+        print("  Manual install: download NotoEmoji-Regular.ttf and place in fonts/")
+        return
     try:
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
         pdfmetrics.registerFont(TTFont(_EMOJI_FONT_NAME, _EMOJI_FONT_PATH))
         _emoji_font_registered = True
     except Exception:
@@ -154,40 +165,99 @@ def _parse_html_blocks(html: str) -> list[str]:
     return blocks
 
 
-def _table_to_flowable(table_html: str, cell_style) -> Flowable:
-    """Parse a <table> HTML block into a ReportLab Table flowable."""
-    rows: list[list[str]] = []
-    for tr_match in re.finditer(r"<tr>(.*?)</tr>", table_html, re.DOTALL):
-        cells = []
-        for td_match in re.finditer(r"<t[hd][^>]*>(.*?)</t[hd]>", tr_match.group(1), re.DOTALL):
-            text = re.sub(r"<[^>]+>", "", td_match.group(1)).strip()
-            cells.append(text)
-        rows.append(cells)
+def _strip_tags(html: str) -> str:
+    """Remove HTML tags to get plain text length for width measurement."""
+    return re.sub(r"<[^>]+>", "", html)
 
-    if not rows:
+
+def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowable:
+    """Parse a <table> HTML block into a ReportLab Table flowable spanning full width."""
+    raw_rows: list[list[str]] = []      # raw cell text (with markup)
+    rows: list[list[Paragraph]] = []    # Paragraph objects for rendering
+    header_empty = False
+    for tr_match in re.finditer(r"<tr>(.*?)</tr>", table_html, re.DOTALL):
+        raw_cells = []
+        all_empty = True
+        for td_match in re.finditer(r"<t[hd][^>]*>(.*?)</t[hd]>", tr_match.group(1), re.DOTALL):
+            text = td_match.group(1).strip()
+            # Convert markdown tags to ReportLab tags in cells too
+            text = text.replace("<strong>", "<b>").replace("</strong>", "</b>")
+            text = text.replace("<em>", "<i>").replace("</em>", "</i>")
+            if text:
+                all_empty = False
+            raw_cells.append(text)
+        if not raw_rows and all_empty:
+            header_empty = True
+        raw_rows.append(raw_cells)
+
+    if not raw_rows:
         return Paragraph(table_html, cell_style)
 
-    t = Table(rows, repeatRows=1)
-    t.setStyle(TableStyle([
+    num_cols = max(len(r) for r in raw_rows)
+
+    # Measure longest plain-text per column for proportional widths
+    col_max_chars = [0] * num_cols
+    for row in raw_rows:
+        for ci, text in enumerate(row):
+            col_max_chars[ci] = max(col_max_chars[ci], len(_strip_tags(text)))
+
+    # Distribute widths proportionally with a minimum floor
+    pad = round(cell_style.fontSize * 0.5) * 2  # left + right padding
+    min_col = pad + 20
+    total_chars = sum(col_max_chars) or 1
+    raw_widths = [(c / total_chars) * avail_width for c in col_max_chars]
+    col_widths = [max(w, min_col) for w in raw_widths]
+    # Scale down if minimums pushed total over avail_width
+    total_w = sum(col_widths)
+    if total_w > avail_width:
+        scale = avail_width / total_w
+        col_widths = [w * scale for w in col_widths]
+
+    # Build Paragraph objects (skip content for empty header)
+    for ri, raw_cells in enumerate(raw_rows):
+        if ri == 0 and header_empty:
+            rows.append([Paragraph("\u00a0", cell_style)] * len(raw_cells))
+        else:
+            rows.append([Paragraph(c or "\u00a0", cell_style) for c in raw_cells])
+
+    fs = cell_style.fontSize
+    styles_list = [
         ("BACKGROUND", (0, 0), (-1, 0), colors.Color(0.9, 0.9, 0.9)),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("LEADING", (0, 0), (-1, -1), 11),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("LEFTPADDING", (0, 0), (-1, -1), 4),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
-    ]))
+        ("FONTSIZE", (0, 0), (-1, -1), fs),
+        ("LEADING", (0, 0), (-1, -1), round(fs * 1.35)),
+        ("TOPPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
+        ("LEFTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
+        ("RIGHTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
+    ]
+    if header_empty:
+        # Force small row height for empty header: set height and zero out padding
+        normal_row = fs * 1.35 + fs * 0.5 + fs * 0.5
+        styles_list.append(("ROWHEIGHTS", (0, 0), (-1, 0), 0))
+        styles_list.append(("TOPPADDING", (0, 0), (-1, 0), 0))
+        styles_list.append(("BOTTOMPADDING", (0, 0), (-1, 0), 0))
+
+    t = Table(rows, colWidths=col_widths, repeatRows=1)
+    t.setStyle(TableStyle(styles_list))
     return t
 
 
-def md_to_flowables(md_text: str, styles) -> list:
+def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
     """Convert a markdown string into a list of ReportLab flowables."""
     if not md_text or not md_text.strip():
         return [Paragraph("<i>No description</i>", styles["italic"])]
 
     html = markdown.markdown(md_text, extensions=["tables", "fenced_code"])
+
+    # Convert markdown HTML tags to ReportLab-compatible tags
+    html = html.replace("<strong>", "<b>").replace("</strong>", "</b>")
+    html = html.replace("<em>", "<i>").replace("</em>", "</i>")
+
+    # Apply emoji rendering AFTER markdown→HTML conversion
+    html = process_emojis(html)
+
     flowables: list = []
 
     for block in _parse_html_blocks(html):
@@ -196,7 +266,7 @@ def md_to_flowables(md_text: str, styles) -> list:
             flowables.append(Spacer(1, 4))
             continue
         if stripped.startswith("<table"):
-            flowables.append(_table_to_flowable(stripped, styles["body"]))
+            flowables.append(_table_to_flowable(stripped, styles["body"], avail_width))
         elif stripped.startswith("<h1"):
             flowables.append(Paragraph(stripped, styles["h1"]))
         elif stripped.startswith("<h2"):
@@ -240,60 +310,64 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
         topMargin=15 * mm,
         bottomMargin=15 * mm,
     )
+    avail_width = A5[0] - 30 * mm  # page width minus margins
+
+    # ── Base font size: all other sizes are relative to this ────────────
+    base = 9  # change this single value to scale everything
 
     sample_styles = getSampleStyleSheet()
     styles = {
         "title": ParagraphStyle(
             "card_title",
             parent=sample_styles["Heading1"],
-            fontSize=15,
-            spaceAfter=4,
+            fontSize=round(base * 1.3),
+            spaceAfter=round(base * 0.5),
         ),
         "h1": ParagraphStyle(
             "md_h1",
             parent=sample_styles["Heading2"],
-            fontSize=12,
-            spaceAfter=4,
+            fontSize=round(base * 1.2),
+            spaceAfter=round(base * 0.4),
         ),
         "h2": ParagraphStyle(
             "md_h2",
             parent=sample_styles["Heading3"],
-            fontSize=10,
-            spaceAfter=3,
+            fontSize=round(base * 1.1),
+            spaceAfter=round(base * 0.35),
         ),
         "h3": ParagraphStyle(
             "md_h3",
             parent=sample_styles["Heading4"],
-            fontSize=9,
-            spaceAfter=3,
+            fontSize=round(base * 1.1),
+            spaceAfter=round(base * 0.3),
         ),
         "body": ParagraphStyle(
             "md_body",
             parent=sample_styles["BodyText"],
-            fontSize=8,
-            leading=11,
-            spaceAfter=2,
+            fontSize=base,
+            leading=round(base * 1.35),
+            spaceAfter=round(base * 0.25),
         ),
         "italic": ParagraphStyle(
             "md_italic",
             parent=sample_styles["BodyText"],
-            fontSize=8,
-            leading=11,
+            fontSize=base,
+            leading=round(base * 1.35),
             textColor=colors.grey,
         ),
         "code": ParagraphStyle(
             "md_code",
             parent=sample_styles["Code"],
-            fontSize=7,
-            leading=10,
+            fontSize=round(base * 0.85),
+            leading=round(base * 1.2),
             backColor=colors.Color(0.95, 0.95, 0.95),
         ),
         "label": ParagraphStyle(
             "label",
             parent=sample_styles["Normal"],
-            fontSize=8,
+            fontSize=base,
             textColor=colors.Color(0.3, 0.3, 0.3),
-            spaceAfter=6,
+            spaceAfter=0,
         ),
     }
 
@@ -303,16 +377,23 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
         # Title
         story.append(Paragraph(card["title"], styles["title"]))
 
-        # Labels (emojis rendered via Noto Emoji if available)
+        # Bereich (labels)
         labels = card.get("labels", [])
         if labels:
             names = [process_emojis(l.get("title", "")).strip() for l in labels]
             names = [n for n in names if n]
-            story.append(Paragraph("  ·  ".join(names), styles["label"]))
+            story.append(Paragraph(f'<b>Bereich:</b> {"  ·  ".join(names)}', styles["label"]))
         else:
-            story.append(Paragraph("<i>No labels</i>", styles["label"]))
+            story.append(Paragraph('<b>Bereich:</b> <i>—</i>', styles["label"]))
 
-        story.append(Spacer(1, 4 * mm))
+        # Status (stack name)
+        stack_title = card.get("_stack_title", "")
+        story.append(Paragraph(
+            f'<b>Status:</b> {process_emojis(stack_title)}' if stack_title else '<b>Status:</b> <i>—</i>',
+            styles["label"],
+        ))
+
+        story.append(Spacer(1, round(base * 0.3) * mm))
 
         # Assigned users (if any)
         users = card.get("assignedUsers", [])
@@ -325,11 +406,11 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
                 f'<b>Zugewiesen an:</b> {", ".join(names)}',
                 styles["label"],
             ))
-            story.append(Spacer(1, 2 * mm))
+            story.append(Spacer(1, round(base * 0.2) * mm))
 
-        # Description (markdown → HTML → ReportLab), emojis wrapped for rendering
-        desc = process_emojis(card.get("description", ""))
-        story.extend(md_to_flowables(desc, styles))
+        # Description (markdown → HTML → ReportLab)
+        desc = card.get("description", "")
+        story.extend(md_to_flowables(desc, styles, avail_width))
 
         # Page break after each card (except the last)
         if idx < len(cards) - 1:
@@ -468,9 +549,11 @@ def filter_cards(board: dict, stack_ids: list[int], label_ids: list[int]) -> lis
     for sid in sorted(stacks, key=lambda k: stacks[k].get("order", 0)):
         if int(sid) not in selected_stacks:
             continue
+        stack_title = stacks[sid].get("title", "")
         for card in stacks[sid].get("cards", []):
             card_label_ids = {lbl["id"] for lbl in card.get("labels", [])}
             if not selected_labels or card_label_ids & selected_labels or not card_label_ids:
+                card["_stack_title"] = stack_title
                 result.append(card)
     return result
 

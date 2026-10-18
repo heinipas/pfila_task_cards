@@ -15,7 +15,6 @@ import sys
 
 import markdown
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A5
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
@@ -233,9 +232,8 @@ def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowa
         ("RIGHTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
     ]
     if header_empty:
-        # Force small row height for empty header: set height and zero out padding
         normal_row = fs * 1.35 + fs * 0.5 + fs * 0.5
-        styles_list.append(("ROWHEIGHTS", (0, 0), (-1, 0), 0))
+        styles_list.append(("ROWHEIGHTS", (0, 0), (-1, 0), round(normal_row * 0.25)))
         styles_list.append(("TOPPADDING", (0, 0), (-1, 0), 0))
         styles_list.append(("BOTTOMPADDING", (0, 0), (-1, 0), 0))
 
@@ -257,6 +255,14 @@ def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
 
     # Apply emoji rendering AFTER markdown→HTML conversion
     html = process_emojis(html)
+
+    # Task-list checkboxes: - [ ] → ☐, - [x] → ☑
+    if _emoji_font_registered:
+        _box_font = f'<font name="{_EMOJI_FONT_NAME}">'
+        html = html.replace("[ ]", f"{_box_font}\u2610</font>")
+        html = re.sub(r"\[[xX]\]", f"{_box_font}\u2611</font>", html)
+    else:
+        html = html.replace("[ ]", "\u2610").replace("[x]", "\u2611").replace("[X]", "\u2611")
 
     flowables: list = []
 
@@ -298,125 +304,168 @@ def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
 
 # ── Build PDF ───────────────────────────────────────────────────────────────
 
+
+def _build_card_story(card: dict, styles: dict, avail_width: float, base: float) -> list:
+    """Build the flowable list for a single card."""
+    parts = []
+    parts.append(Paragraph(card["title"], styles["title"]))
+
+    # Bereich (labels)
+    labels = card.get("labels", [])
+    if labels:
+        names = [process_emojis(l.get("title", "")).strip() for l in labels]
+        names = [n for n in names if n]
+        parts.append(Paragraph(f'<b>Bereich:</b> {"  ·  ".join(names)}', styles["label"]))
+    else:
+        parts.append(Paragraph('<b>Bereich:</b> <i>—</i>', styles["label"]))
+
+    # Status (stack name) + assigned users on one line
+    stack_title = card.get("_stack_title", "")
+    status_line = (
+        f'<b>Status:</b> {process_emojis(stack_title)}'
+        if stack_title else '<b>Status:</b> <i>—</i>'
+    )
+    users = card.get("assignedUsers", [])
+    if users:
+        names = []
+        for u in users:
+            p = u.get("participant", {})
+            names.append(p.get("displayname") or p.get("displayName") or u.get("displayName") or "?")
+        status_line += f'  ·  <b>Zugewiesen an:</b> {", ".join(names)}'
+    parts.append(Paragraph(status_line, styles["label"]))
+    parts.append(Spacer(1, round(base * 0.3) * mm))
+
+    # Description
+    desc = card.get("description", "")
+    parts.extend(md_to_flowables(desc, styles, avail_width))
+    return parts
+
+
 def build_pdf(cards: list[dict], output_path: str) -> None:
-    """Generate the PDF with one page per card."""
+    """Generate the PDF with one page per card, even page count, footer on every page."""
+    from reportlab.lib.pagesizes import A5 as _A5
+    from reportlab.pdfgen import canvas as _canvas_mod
+
     _ensure_emoji_font()
 
-    doc = SimpleDocTemplate(
-        output_path,
-        pagesize=A5,
-        leftMargin=15 * mm,
-        rightMargin=15 * mm,
-        topMargin=15 * mm,
-        bottomMargin=15 * mm,
-    )
-    avail_width = A5[0] - 30 * mm  # page width minus margins
+    page_w, _page_h = _A5  # pagesizes are (width, height)
+    margin = 15 * mm
+    bottom_margin = 20 * mm
+    avail_width = page_w - 2 * margin
 
-    # ── Base font size: all other sizes are relative to this ────────────
-    base = 9  # change this single value to scale everything
-
+    # ── Styles ──────────────────────────────────────────────────────────
+    base = 9
     sample_styles = getSampleStyleSheet()
     styles = {
-        "title": ParagraphStyle(
-            "card_title",
-            parent=sample_styles["Heading1"],
-            fontSize=round(base * 1.3),
-            spaceAfter=round(base * 0.5),
-        ),
-        "h1": ParagraphStyle(
-            "md_h1",
-            parent=sample_styles["Heading2"],
-            fontSize=round(base * 1.2),
-            spaceAfter=round(base * 0.4),
-        ),
-        "h2": ParagraphStyle(
-            "md_h2",
-            parent=sample_styles["Heading3"],
-            fontSize=round(base * 1.1),
-            spaceAfter=round(base * 0.35),
-        ),
-        "h3": ParagraphStyle(
-            "md_h3",
-            parent=sample_styles["Heading4"],
-            fontSize=round(base * 1.1),
-            spaceAfter=round(base * 0.3),
-        ),
-        "body": ParagraphStyle(
-            "md_body",
-            parent=sample_styles["BodyText"],
-            fontSize=base,
-            leading=round(base * 1.35),
-            spaceAfter=round(base * 0.25),
-        ),
-        "italic": ParagraphStyle(
-            "md_italic",
-            parent=sample_styles["BodyText"],
-            fontSize=base,
-            leading=round(base * 1.35),
-            textColor=colors.grey,
-        ),
-        "code": ParagraphStyle(
-            "md_code",
-            parent=sample_styles["Code"],
-            fontSize=round(base * 0.85),
-            leading=round(base * 1.2),
-            backColor=colors.Color(0.95, 0.95, 0.95),
-        ),
-        "label": ParagraphStyle(
-            "label",
-            parent=sample_styles["Normal"],
-            fontSize=base,
-            textColor=colors.Color(0.3, 0.3, 0.3),
-            spaceAfter=0,
-        ),
+        "title": ParagraphStyle("card_title", parent=sample_styles["Heading1"],
+                                fontSize=round(base * 1.3), spaceAfter=round(base * 0.5)),
+        "h1": ParagraphStyle("md_h1", parent=sample_styles["Heading2"],
+                             fontSize=round(base * 1.2), spaceAfter=round(base * 0.4)),
+        "h2": ParagraphStyle("md_h2", parent=sample_styles["Heading3"],
+                             fontSize=round(base * 1.1), spaceAfter=round(base * 0.35)),
+        "h3": ParagraphStyle("md_h3", parent=sample_styles["Heading4"],
+                             fontSize=round(base * 1.1), spaceAfter=round(base * 0.3)),
+        "body": ParagraphStyle("md_body", parent=sample_styles["BodyText"],
+                               fontSize=base, leading=round(base * 1.35),
+                               spaceAfter=round(base * 0.25)),
+        "italic": ParagraphStyle("md_italic", parent=sample_styles["BodyText"],
+                                 fontSize=base, leading=round(base * 1.35),
+                                 textColor=colors.grey),
+        "code": ParagraphStyle("md_code", parent=sample_styles["Code"],
+                               fontSize=round(base * 0.85), leading=round(base * 1.2),
+                               backColor=colors.Color(0.95, 0.95, 0.95)),
+        "label": ParagraphStyle("label", parent=sample_styles["Normal"],
+                                fontSize=base, textColor=colors.Color(0.3, 0.3, 0.3),
+                                spaceAfter=0),
     }
 
-    story: list = []
+    # ── Card flowables + marker to track card boundaries on the canvas ──
+    card_titles = [c["title"] for c in cards]
 
-    for idx, card in enumerate(cards):
-        # Title
-        story.append(Paragraph(card["title"], styles["title"]))
+    class _CardMarker(Flowable):
+        """Zero-size flowable that tells the canvas which card starts here."""
+        def __init__(self, idx):
+            super().__init__()
+            self.idx = idx
+        def wrap(self, aw, ah):
+            return 0, 0
+        def draw(self):
+            self.canv._note_card(self.idx)
 
-        # Bereich (labels)
-        labels = card.get("labels", [])
-        if labels:
-            names = [process_emojis(l.get("title", "")).strip() for l in labels]
-            names = [n for n in names if n]
-            story.append(Paragraph(f'<b>Bereich:</b> {"  ·  ".join(names)}', styles["label"]))
-        else:
-            story.append(Paragraph('<b>Bereich:</b> <i>—</i>', styles["label"]))
+    real_counts: list[int] = []
 
-        # Status (stack name)
-        stack_title = card.get("_stack_title", "")
-        story.append(Paragraph(
-            f'<b>Status:</b> {process_emojis(stack_title)}' if stack_title else '<b>Status:</b> <i>—</i>',
-            styles["label"],
-        ))
+    class _CountingCanvas(_canvas_mod.Canvas):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, **kw)
+            self._card_idx = -1
+            self.card_counts = []
+        def _note_card(self, idx):
+            self._card_idx = idx
+            while len(self.card_counts) <= idx:
+                self.card_counts.append(0)
+        def showPage(self):
+            if self._card_idx >= 0:
+                self.card_counts[self._card_idx] += 1
+            super().showPage()
+        def save(self):
+            real_counts.clear()
+            real_counts.extend(self.card_counts)
+            super().save()
 
-        story.append(Spacer(1, round(base * 0.3) * mm))
+    def _assemble(pad_even: bool) -> list:
+        # Build fresh flowables each pass – ReportLab keeps layout state on
+        # flowables, so reusing them in a second build() causes LayoutErrors.
+        story = []
+        for i, card in enumerate(cards):
+            story.append(_CardMarker(i))
+            story.extend(_build_card_story(card, styles, avail_width, base))
+            if (pad_even and i < len(real_counts) and real_counts[i] % 2 != 0):
+                story.append(PageBreak())
+            if i < len(cards) - 1:
+                story.append(PageBreak())
+        return story
 
-        # Assigned users (if any)
-        users = card.get("assignedUsers", [])
-        if users:
-            names = []
-            for u in users:
-                p = u.get("participant", {})
-                names.append(p.get("displayname") or p.get("displayName") or u.get("displayName") or "?")
-            story.append(Paragraph(
-                f'<b>Zugewiesen an:</b> {", ".join(names)}',
-                styles["label"],
-            ))
-            story.append(Spacer(1, round(base * 0.2) * mm))
+    # ── Pass 1: build once to count the real pages per card ─────────────
+    from io import BytesIO
+    counting_doc = SimpleDocTemplate(
+        BytesIO(), pagesize=_A5,
+        leftMargin=margin, rightMargin=margin,
+        topMargin=margin, bottomMargin=bottom_margin,
+    )
+    counting_doc.build(_assemble(False), canvasmaker=_CountingCanvas)
 
-        # Description (markdown → HTML → ReportLab)
-        desc = card.get("description", "")
-        story.extend(md_to_flowables(desc, styles, avail_width))
+    # ── Pass 2: build final PDF, padding odd cards to even page counts ───
+    padded_counts = [c + (c % 2) for c in real_counts]  # round up to even
 
-        # Page break after each card (except the last)
-        if idx < len(cards) - 1:
-            story.append(PageBreak())
+    class _FooterCanvas(_canvas_mod.Canvas):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, **kw)
+            self._card_idx = -1
+            self._card_page = 0
+        def _note_card(self, idx):
+            self._card_idx = idx
+            self._card_page = 0
+        def showPage(self):
+            if self._card_idx >= 0:
+                self._card_page += 1
+                self._draw_footer()
+            super().showPage()
+        def _draw_footer(self):
+            w, _h = self._pagesize
+            self.setFont("Helvetica", 7)
+            self.setFillColor(colors.Color(0.4, 0.4, 0.4))
+            title = card_titles[self._card_idx] if 0 <= self._card_idx < len(card_titles) else ""
+            if title:
+                self.drawString(margin, 8 * mm, title)
+            total = padded_counts[self._card_idx] if 0 <= self._card_idx < len(padded_counts) else "?"
+            self.drawRightString(w - margin, 8 * mm, f"Seite {self._card_page}/{total}")
 
-    doc.build(story)
+    doc = SimpleDocTemplate(
+        output_path, pagesize=_A5,
+        leftMargin=margin, rightMargin=margin,
+        topMargin=margin, bottomMargin=bottom_margin,
+    )
+    doc.build(_assemble(True), canvasmaker=_FooterCanvas)
 
 
 # ── CLI helpers ──────────────────────────────────────────────────────────────

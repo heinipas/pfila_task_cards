@@ -8,12 +8,12 @@ one page per card showing title, labels, and markdown description.
 
 import json
 import os
-import platform
 import re
-import subprocess
 import sys
 
 import markdown
+from config import CONFIG, EmojiConfig, RenderConfig, TableConfig
+from deck import collect_labels, filter_cards, load_deck
 from reportlab.lib import colors
 from reportlab.lib.fonts import tt2ps
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -28,11 +28,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
-
-
-# ── Configuration ───────────────────────────────────────────────────────────
-
-EVEN_PAGE_CARDS = False  # pad every card to an even page count (double-sided printing)
+from ui import ask_multiselect, pick_file, pick_folder
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -68,7 +64,7 @@ _EMOJI_RE = re.compile(
 _emoji_font_registered = False
 
 
-def _ensure_emoji_font():
+def _ensure_emoji_font(download_if_missing: bool = True):
     """Download Noto Emoji if needed and register it with ReportLab."""
     global _emoji_font_registered
     if _emoji_font_registered:
@@ -85,6 +81,10 @@ def _ensure_emoji_font():
             return
         except Exception:
             pass
+
+    if not download_if_missing:
+        print("  ⚠ Noto Emoji font is not available – emojis will be stripped.")
+        return
 
     # 2. Download Noto Emoji
     os.makedirs(_FONTS_DIR, exist_ok=True)
@@ -109,8 +109,10 @@ def _ensure_emoji_font():
         print("  ⚠ Could not register emoji font – emojis will be stripped.")
 
 
-def process_emojis(text: str) -> str:
+def process_emojis(text: str, emoji_config: EmojiConfig = CONFIG.emoji) -> str:
     """Wrap emoji characters in <font> tags for ReportLab, or strip them."""
+    if not emoji_config.enabled:
+        return _EMOJI_RE.sub("", text)
     if _emoji_font_registered:
         def _wrap(m):
             return f'<font name="{_EMOJI_FONT_NAME}">{m.group(0)}</font>'
@@ -202,7 +204,12 @@ def _strip_tags(html: str) -> str:
     return re.sub(r"<[^>]+>", "", html)
 
 
-def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowable:
+def _table_to_flowable(
+    table_html: str,
+    cell_style,
+    avail_width: float,
+    table_config: TableConfig,
+) -> Flowable:
     """Parse a <table> HTML block into a ReportLab Table flowable spanning full width."""
     raw_rows: list[list[str]] = []      # raw cell text (with markup)
     rows: list[list[Paragraph]] = []    # Paragraph objects for rendering
@@ -233,11 +240,14 @@ def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowa
         for ci, text in enumerate(row):
             col_max_chars[ci] = max(col_max_chars[ci], len(_strip_tags(text)))
 
-    # Distribute widths proportionally with a minimum floor
+    # Distribute widths proportionally with a minimum floor.
     pad = round(cell_style.fontSize * 0.5) * 2  # left + right padding
     min_col = pad + 20
     total_chars = sum(col_max_chars) or 1
-    raw_widths = [(c / total_chars) * avail_width for c in col_max_chars]
+    if table_config.automatic_column_widths:
+        raw_widths = [(c / total_chars) * avail_width for c in col_max_chars]
+    else:
+        raw_widths = [avail_width / num_cols] * num_cols
     col_widths = [max(w, min_col) for w in raw_widths]
     # Scale down if minimums pushed total over avail_width
     total_w = sum(col_widths)
@@ -254,7 +264,6 @@ def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowa
 
     fs = cell_style.fontSize
     styles_list = [
-        ("BACKGROUND", (0, 0), (-1, 0), colors.Color(0.9, 0.9, 0.9)),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("FONTSIZE", (0, 0), (-1, -1), fs),
@@ -264,19 +273,30 @@ def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowa
         ("LEFTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
         ("RIGHTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
     ]
-    if header_empty:
+    if table_config.shade_header:
+        styles_list.append(("BACKGROUND", (0, 0), (-1, 0), colors.Color(0.9, 0.9, 0.9)))
+    if header_empty and table_config.compact_empty_header:
         normal_row = fs * 1.35 + fs * 0.5 + fs * 0.5
         styles_list.append(("ROWHEIGHTS", (0, 0), (-1, 0), round(normal_row * 0.25)))
         styles_list.append(("TOPPADDING", (0, 0), (-1, 0), 0))
         styles_list.append(("BOTTOMPADDING", (0, 0), (-1, 0), 0))
 
-    t = Table(rows, colWidths=col_widths, repeatRows=1)
+    t = Table(
+        rows,
+        colWidths=col_widths,
+        repeatRows=1 if table_config.repeat_headers else 0,
+    )
     t.setStyle(TableStyle(styles_list))
     t.hAlign = "LEFT"
     return t
 
 
-def _md_segment_to_flowables(md_text: str, styles, avail_width: float) -> list:
+def _md_segment_to_flowables(
+    md_text: str,
+    styles,
+    avail_width: float,
+    config: RenderConfig,
+) -> list:
     """Render one markdown segment (without headings) into flowables."""
     html = markdown.markdown(md_text, extensions=["tables", "fenced_code"])
 
@@ -285,7 +305,7 @@ def _md_segment_to_flowables(md_text: str, styles, avail_width: float) -> list:
     html = html.replace("<em>", "<i>").replace("</em>", "</i>")
 
     # Apply emoji rendering AFTER markdown→HTML conversion
-    html = process_emojis(html)
+    html = process_emojis(html, config.emoji)
 
     flowables: list = []
 
@@ -295,7 +315,9 @@ def _md_segment_to_flowables(md_text: str, styles, avail_width: float) -> list:
             flowables.append(Spacer(1, 4))
             continue
         if stripped.startswith("<table"):
-            flowables.append(_table_to_flowable(stripped, styles["body"], avail_width))
+            flowables.append(
+                _table_to_flowable(stripped, styles["body"], avail_width, config.table)
+            )
         elif stripped.startswith("<h"):
             m = re.match(r"<h([1-3])>", stripped)
             level = m.group(1) if m else "3"
@@ -307,23 +329,29 @@ def _md_segment_to_flowables(md_text: str, styles, avail_width: float) -> list:
             text = stripped.replace("<li>", "").replace("</li>", "").strip()
             m = re.match(r"^\[([ xX])\]\s*", text)
             if m:
-                # Task-list item: render a real checkbox before the text
                 checked = m.group(1).lower() == "x"
-                text = text[m.end():]
-                box_w = 14  # checkbox column width
-                t = Table(
-                    [[CheckBox(checked), Paragraph(text or "\u00a0", styles["body"])]],
-                    colWidths=[box_w, avail_width - box_w - 4],
-                )
-                t.setStyle(TableStyle([
-                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 2),
-                    ("TOPPADDING", (0, 0), (-1, -1), 0),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
-                ]))
-                t.hAlign = "LEFT"
-                flowables.append(t)
+                if config.checkbox.enabled:
+                    text = text[m.end():]
+                    checkbox_size = (
+                        config.typography.base_size * config.checkbox.size_scale
+                    )
+                    box_w = checkbox_size + 7
+                    t = Table(
+                        [[CheckBox(checked, checkbox_size),
+                          Paragraph(text or "\u00a0", styles["body"])]],
+                        colWidths=[box_w, avail_width - box_w - 4],
+                    )
+                    t.setStyle(TableStyle([
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+                        ("TOPPADDING", (0, 0), (-1, -1), 0),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                    ]))
+                    t.hAlign = "LEFT"
+                    flowables.append(t)
+                else:
+                    flowables.append(Paragraph("- " + text, styles["body"]))
             else:
                 flowables.append(Paragraph("  • " + text, styles["body"]))
         elif stripped.startswith("<p"):
@@ -342,7 +370,7 @@ def _md_segment_to_flowables(md_text: str, styles, avail_width: float) -> list:
     return flowables
 
 
-def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
+def md_to_flowables(md_text: str, styles, avail_width: float, config: RenderConfig) -> list:
     """Convert a markdown string into a list of ReportLab flowables."""
     if not md_text or not md_text.strip():
         return [Paragraph("<i>No description</i>", styles["italic"])]
@@ -370,86 +398,111 @@ def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
     for kind, payload in parts:
         if kind == "h":
             level, text = payload
-            flowables.append(Paragraph(process_emojis(text), styles[f"h{level}"]))
+            flowables.append(Paragraph(process_emojis(text, config.emoji), styles[f"h{level}"]))
         else:
-            flowables.extend(_md_segment_to_flowables(payload, styles, avail_width))
+            flowables.extend(_md_segment_to_flowables(payload, styles, avail_width, config))
     return flowables
 
 
 # ── Build PDF ───────────────────────────────────────────────────────────────
 
 
-def _build_card_story(card: dict, styles: dict, avail_width: float, base: float) -> list:
+def _build_card_story(
+    card: dict,
+    styles: dict,
+    avail_width: float,
+    config: RenderConfig,
+) -> list:
     """Build the flowable list for a single card."""
     parts = []
     parts.append(Paragraph(card["title"], styles["title"]))
 
     # Bereich (labels)
+    metadata = config.metadata
     labels = card.get("labels", [])
-    if labels:
-        names = [process_emojis(l.get("title", "")).strip() for l in labels]
+    if metadata.show_labels and labels:
+        names = [process_emojis(l.get("title", ""), config.emoji).strip() for l in labels]
         names = [n for n in names if n]
-        parts.append(Paragraph(f'<b>Bereich:</b> {"  ·  ".join(names)}', styles["label"]))
-    else:
-        parts.append(Paragraph('<b>Bereich:</b> <i>—</i>', styles["label"]))
+        parts.append(Paragraph(
+            f'<b>{metadata.labels_title}:</b> {"  ·  ".join(names)}',
+            styles["label"],
+        ))
+    elif metadata.show_labels:
+        parts.append(Paragraph(
+            f'<b>{metadata.labels_title}:</b> <i>{metadata.missing_value}</i>',
+            styles["label"],
+        ))
 
     # Status (stack name) + assigned users on one line
     stack_title = card.get("_stack_title", "")
-    status_line = (
-        f'<b>Status:</b> {process_emojis(stack_title)}'
-        if stack_title else '<b>Status:</b> <i>—</i>'
-    )
+    status_line = ""
+    if metadata.show_status:
+        status_line = (
+            f'<b>{metadata.status_title}:</b> {process_emojis(stack_title, config.emoji)}'
+            if stack_title
+            else f'<b>{metadata.status_title}:</b> <i>{metadata.missing_value}</i>'
+        )
     users = card.get("assignedUsers", [])
-    if users:
+    if metadata.show_assignees and users:
         names = []
         for u in users:
             p = u.get("participant", {})
             names.append(p.get("displayname") or p.get("displayName") or u.get("displayName") or "?")
-        status_line += f'  ·  <b>Zugewiesen an:</b> {", ".join(names)}'
-    parts.append(Paragraph(status_line, styles["label"]))
-    parts.append(Spacer(1, round(base * 0.3) * mm))
+        prefix = "  ·  " if status_line else ""
+        status_line += f'{prefix}<b>{metadata.assignees_title}:</b> {", ".join(names)}'
+    if status_line:
+        parts.append(Paragraph(status_line, styles["label"]))
+    parts.append(Spacer(1, round(config.typography.base_size * 0.3) * mm))
 
     # Description
     desc = card.get("description", "")
-    parts.extend(md_to_flowables(desc, styles, avail_width))
+    parts.extend(md_to_flowables(desc, styles, avail_width, config))
     return parts
 
 
-def build_pdf(cards: list[dict], output_path: str) -> None:
+def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG) -> None:
     """Generate the PDF with one page per card, even page count, footer on every page."""
-    from reportlab.lib.pagesizes import A5 as _A5
+    from reportlab.lib import pagesizes
     from reportlab.pdfgen import canvas as _canvas_mod
 
-    _ensure_emoji_font()
+    if config.emoji.enabled:
+        _ensure_emoji_font(config.emoji.download_if_missing)
 
-    page_w, _page_h = _A5  # pagesizes are (width, height)
-    margin = 15 * mm
-    bottom_margin = 20 * mm
-    avail_width = page_w - 2 * margin
+    page_size = getattr(pagesizes, config.page.size, None)
+    if page_size is None or config.page.size not in {"A4", "A5"}:
+        raise ValueError("Page size must be either 'A4' or 'A5'.")
+    page_w, _page_h = page_size
+    margin = config.page.margin_left_mm * mm
+    right_margin = config.page.margin_right_mm * mm
+    top_margin = config.page.margin_top_mm * mm
+    bottom_margin = config.page.margin_bottom_mm * mm
+    avail_width = page_w - margin - right_margin
 
     # ── Styles ──────────────────────────────────────────────────────────
-    base = 9
+    typography = config.typography
+    base = typography.base_size
     sample_styles = getSampleStyleSheet()
     bold = tt2ps(_baseFontName, 1, 0)
     styles = {
         "title": ParagraphStyle("card_title", parent=sample_styles["Heading1"],
                                 fontName=bold,
-                                fontSize=round(base * 1.3), spaceAfter=round(base * 0.5)),
+                                fontSize=round(base * typography.title_scale), spaceAfter=round(base * 0.5)),
         "h1": ParagraphStyle("md_h1", parent=sample_styles["Heading2"],
                              fontName=bold,
-                             fontSize=round(base * 1.2), spaceAfter=round(base * 0.4)),
+                             fontSize=round(base * typography.heading_1_scale), spaceAfter=round(base * 0.4)),
         "h2": ParagraphStyle("md_h2", parent=sample_styles["Heading3"],
-                             fontSize=round(base * 1.1), spaceAfter=round(base * 0.35)),
+                             fontSize=round(base * typography.heading_2_scale), spaceAfter=round(base * 0.35)),
         "h3": ParagraphStyle("md_h3", parent=sample_styles["Heading4"],
-                             fontSize=round(base * 1.1), spaceAfter=round(base * 0.3)),
+                             fontSize=round(base * typography.heading_3_scale), spaceAfter=round(base * 0.3)),
         "body": ParagraphStyle("md_body", parent=sample_styles["BodyText"],
-                               fontSize=base, leading=round(base * 1.35),
+                               fontSize=base, leading=round(base * typography.line_spacing),
                                spaceAfter=round(base * 0.25)),
         "italic": ParagraphStyle("md_italic", parent=sample_styles["BodyText"],
-                                 fontSize=base, leading=round(base * 1.35),
+                                 fontSize=base, leading=round(base * typography.line_spacing),
                                  textColor=colors.grey),
         "code": ParagraphStyle("md_code", parent=sample_styles["Code"],
-                               fontSize=round(base * 0.85), leading=round(base * 1.2),
+                               fontSize=round(base * typography.code_scale),
+                               leading=round(base * typography.line_spacing),
                                backColor=colors.Color(0.95, 0.95, 0.95)),
         "label": ParagraphStyle("label", parent=sample_styles["Normal"],
                                 fontSize=base, textColor=colors.Color(0.3, 0.3, 0.3),
@@ -495,7 +548,7 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
         story = []
         for i, card in enumerate(cards):
             story.append(_CardMarker(i))
-            story.extend(_build_card_story(card, styles, avail_width, base))
+            story.extend(_build_card_story(card, styles, avail_width, config))
             if (pad_even and i < len(real_counts) and real_counts[i] % 2 != 0):
                 story.append(PageBreak())
             if i < len(cards) - 1:
@@ -505,15 +558,17 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
     # ── Pass 1: build once to count the real pages per card ─────────────
     from io import BytesIO
     counting_doc = SimpleDocTemplate(
-        BytesIO(), pagesize=_A5,
-        leftMargin=margin, rightMargin=margin,
-        topMargin=margin, bottomMargin=bottom_margin,
+        BytesIO(), pagesize=page_size,
+        leftMargin=margin, rightMargin=right_margin,
+        topMargin=top_margin, bottomMargin=bottom_margin,
     )
     counting_doc.build(_assemble(False), canvasmaker=_CountingCanvas)
 
     # ── Pass 2: build final PDF, padding odd cards to even page counts ───
     padded_counts = [c + (c % 2) for c in real_counts]  # round up to even
-    total_counts = padded_counts if EVEN_PAGE_CARDS else real_counts
+    total_counts = (
+        padded_counts if config.page.even_pages_per_card else real_counts
+    )
 
     class _FooterCanvas(_canvas_mod.Canvas):
         def __init__(self, *a, **kw):
@@ -524,175 +579,45 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
             self._card_idx = idx
             self._card_page = 0
         def showPage(self):
-            if self._card_idx >= 0:
+            if config.footer.enabled and self._card_idx >= 0:
                 self._card_page += 1
                 self._draw_footer()
             super().showPage()
         def _draw_footer(self):
             w, _h = self._pagesize
-            self.setFont("Helvetica", 7)
+            footer_font_size = (
+                config.typography.base_size * config.footer.font_scale
+            )
+            self.setFont("Helvetica", footer_font_size)
             self.setFillColor(colors.Color(0.4, 0.4, 0.4))
             title = card_titles[self._card_idx] if 0 <= self._card_idx < len(card_titles) else ""
-            if title:
-                self.drawString(margin, 8 * mm, title)
+            if config.footer.show_card_title and title:
+                self.drawString(margin, config.footer.bottom_offset_mm * mm, title)
             total = total_counts[self._card_idx] if 0 <= self._card_idx < len(total_counts) else "?"
-            self.drawRightString(w - margin, 8 * mm, f"Seite {self._card_page}/{total}")
+            if config.footer.show_page_number:
+                self.drawRightString(
+                    w - right_margin,
+                    config.footer.bottom_offset_mm * mm,
+                    f"Seite {self._card_page}/{total}",
+                )
         def save(self):
             # Safety net: ReportLab can swallow a trailing PageBreak, so add
             # the padding blank page here if it is still missing.
-            if (EVEN_PAGE_CARDS and self._card_idx >= 0
+            if (config.page.even_pages_per_card and self._card_idx >= 0
                     and self._card_idx < len(padded_counts)
                     and self._card_page < padded_counts[self._card_idx]):
                 self._card_page += 1
-                self._draw_footer()
+                if config.footer.enabled:
+                    self._draw_footer()
                 super().showPage()
             super().save()
 
     doc = SimpleDocTemplate(
-        output_path, pagesize=_A5,
-        leftMargin=margin, rightMargin=margin,
-        topMargin=margin, bottomMargin=bottom_margin,
+        output_path, pagesize=page_size,
+        leftMargin=margin, rightMargin=right_margin,
+        topMargin=top_margin, bottomMargin=bottom_margin,
     )
-    doc.build(_assemble(EVEN_PAGE_CARDS), canvasmaker=_FooterCanvas)
-
-
-# ── CLI helpers ──────────────────────────────────────────────────────────────
-
-def pick_file_macos() -> str | None:
-    """Use macOS native dialog via osascript to pick a file."""
-    try:
-        result = subprocess.run(
-            [
-                "osascript", "-e",
-                (
-                    'POSIX path of (choose file with prompt '
-                    '"Select Nextcloud Deck JSON export" of type {"public.json"})'
-                ),
-            ],
-            capture_output=True, text=True, timeout=120,
-        )
-        if result.returncode == 0:
-            return result.stdout.strip()
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
-    return None
-
-
-def pick_file_cli() -> str | None:
-    """Prompt the user to type or paste a file path."""
-    path = input("Path to Nextcloud Deck JSON file: ").strip().strip('"').strip("'")
-    return path if path else None
-
-
-def pick_file() -> str | None:
-    """Try macOS native dialog first, fall back to CLI prompt."""
-    if platform.system() == "Darwin":
-        result = pick_file_macos()
-        if result:
-            return result
-    return pick_file_cli()
-
-
-def pick_folder_macos() -> str | None:
-    """Use macOS native dialog via osascript to pick a folder."""
-    try:
-        result = subprocess.run(
-            [
-                "osascript", "-e",
-                (
-                    'POSIX path of (choose folder with prompt '
-                    '"Select output folder for PDF")'
-                ),
-            ],
-            capture_output=True, text=True, timeout=120,
-        )
-        if result.returncode == 0:
-            return result.stdout.strip()
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
-    return None
-
-
-def pick_folder(default_name: str) -> str | None:
-    """Ask user for an output folder (native dialog on macOS), return full path."""
-    if platform.system() == "Darwin":
-        folder = pick_folder_macos()
-        if folder:
-            return os.path.join(folder, default_name)
-    # CLI fallback
-    out = input(f"Output PDF path [{default_name}]: ").strip()
-    return out if out else default_name
-
-
-def ask_multiselect(options: list[str], prompt: str) -> list[int]:
-    """
-    Show a numbered list and let the user pick items.
-    Returns list of 0-based indices.  Empty input = select all.
-    """
-    print(f"\n{prompt}")
-    print("-" * len(prompt))
-    for i, opt in enumerate(options, 1):
-        print(f"  {i}. {opt}")
-    print()
-    raw = input("Enter numbers separated by commas (empty = all): ").strip()
-    if not raw:
-        return list(range(len(options)))
-    indices: list[int] = []
-    for part in raw.split(","):
-        part = part.strip()
-        if part.isdigit():
-            idx = int(part) - 1
-            if 0 <= idx < len(options):
-                indices.append(idx)
-    return indices if indices else list(range(len(options)))
-
-
-# ── Data helpers ────────────────────────────────────────────────────────────
-
-def load_deck(path: str) -> dict:
-    """Load and return the first board from a Nextcloud Deck JSON export."""
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    boards = data.get("boards", [])
-    if not boards:
-        raise ValueError("No boards found in the JSON file.")
-    return boards[0]
-
-
-def collect_labels(board: dict) -> dict[int, dict]:
-    """Gather all unique labels from the board."""
-    labels: dict[int, dict] = {}
-    for lbl in board.get("labels", []):
-        labels[lbl["id"]] = lbl
-    for stack in board.get("stacks", {}).values():
-        for card in stack.get("cards", []):
-            for lbl in card.get("labels", []):
-                if lbl["id"] not in labels:
-                    labels[lbl["id"]] = lbl
-    return labels
-
-
-def filter_cards(board: dict, stack_ids: list[int], label_ids: list[int]) -> list[dict]:
-    """
-    Return cards that belong to the selected stacks **and** have at least one
-    of the selected labels.  If no labels are selected, return all cards from
-    the chosen stacks.
-    """
-    selected_stacks = set(stack_ids)
-    selected_labels = set(label_ids)
-
-    result: list[dict] = []
-    stacks = board.get("stacks", {})
-    for sid in sorted(stacks, key=lambda k: stacks[k].get("order", 0)):
-        if int(sid) not in selected_stacks:
-            continue
-        stack_title = stacks[sid].get("title", "")
-        for card in stacks[sid].get("cards", []):
-            card_label_ids = {lbl["id"] for lbl in card.get("labels", [])}
-            if not selected_labels or card_label_ids & selected_labels or not card_label_ids:
-                card["_stack_title"] = stack_title
-                result.append(card)
-    return result
+    doc.build(_assemble(config.page.even_pages_per_card), canvasmaker=_FooterCanvas)
 
 
 # ── Main ────────────────────────────────────────────────────────────────────
@@ -744,7 +669,7 @@ def main():
 
     print(f"\n→ {len(cards)} card(s) selected for export.")
 
-    # 5. Output path (folder picker on macOS)
+    # 5. Output path (native folder picker where available)
     default_name = os.path.splitext(os.path.basename(json_path))[0] + "_cards.pdf"
     output_path = pick_folder(default_name)
     if not output_path:

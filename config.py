@@ -13,7 +13,7 @@ class PageConfig:
     margin_top_mm: float = 10
     margin_bottom_mm: float = 10
     # Add blank pages so every card starts on a fresh sheet when duplex printing.
-    even_pages_per_card: bool = True
+    even_pages_per_card: bool = False
 
 
 @dataclass
@@ -70,7 +70,7 @@ class FooterConfig:
     show_page_number: bool = True
     # Footer font size as a multiple of TypographyConfig.base_size.
     font_scale: float = 0.8
-    bottom_offset_mm: float = 8
+    bottom_offset_mm: float = 10
 
 
 @dataclass

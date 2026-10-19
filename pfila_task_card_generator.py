@@ -476,6 +476,8 @@ def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG
     right_margin = config.page.margin_right_mm * mm
     top_margin = config.page.margin_top_mm * mm
     bottom_margin = config.page.margin_bottom_mm * mm
+    # ReportLab frames add 6 points of padding around flowable content.
+    content_padding = 6
     avail_width = page_w - margin - right_margin
 
     # ── Styles ──────────────────────────────────────────────────────────
@@ -566,9 +568,7 @@ def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG
 
     # ── Pass 2: build final PDF, padding odd cards to even page counts ───
     padded_counts = [c + (c % 2) for c in real_counts]  # round up to even
-    total_counts = (
-        padded_counts if config.page.even_pages_per_card else real_counts
-    )
+    total_counts = real_counts
 
     class _FooterCanvas(_canvas_mod.Canvas):
         def __init__(self, *a, **kw):
@@ -579,9 +579,13 @@ def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG
             self._card_idx = idx
             self._card_page = 0
         def showPage(self):
-            if config.footer.enabled and self._card_idx >= 0:
+            if self._card_idx >= 0:
                 self._card_page += 1
-                self._draw_footer()
+                # Padding pages are deliberately blank and are not included
+                # in the page count shown on the card's real pages.
+                if (config.footer.enabled
+                        and self._card_page <= real_counts[self._card_idx]):
+                    self._draw_footer()
             super().showPage()
         def _draw_footer(self):
             w, _h = self._pagesize
@@ -590,13 +594,21 @@ def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG
             )
             self.setFont("Helvetica", footer_font_size)
             self.setFillColor(colors.Color(0.4, 0.4, 0.4))
-            title = card_titles[self._card_idx] if 0 <= self._card_idx < len(card_titles) else ""
+            title = (
+                card_titles[self._card_idx].strip()
+                if 0 <= self._card_idx < len(card_titles)
+                else ""
+            )
             if config.footer.show_card_title and title:
-                self.drawString(margin, config.footer.bottom_offset_mm * mm, title)
+                self.drawString(
+                    margin + content_padding,
+                    config.footer.bottom_offset_mm * mm,
+                    title,
+                )
             total = total_counts[self._card_idx] if 0 <= self._card_idx < len(total_counts) else "?"
             if config.footer.show_page_number:
                 self.drawRightString(
-                    w - right_margin,
+                    w - right_margin - content_padding,
                     config.footer.bottom_offset_mm * mm,
                     f"Seite {self._card_page}/{total}",
                 )
@@ -607,7 +619,8 @@ def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG
                     and self._card_idx < len(padded_counts)
                     and self._card_page < padded_counts[self._card_idx]):
                 self._card_page += 1
-                if config.footer.enabled:
+                if (config.footer.enabled
+                        and self._card_page <= real_counts[self._card_idx]):
                     self._draw_footer()
                 super().showPage()
             super().save()

@@ -35,6 +35,7 @@ helper. Edit the commented `CONFIG = RenderConfig()` section in
 
 - A4/A5 page size, margins, and optional even-page padding for duplex printing
 - Base font size and relative title/heading/code/checkbox/footer sizing
+- Relative spacing after metadata, before/after headings, and after paragraphs
 - Vector checkbox rendering (`enabled = True`) or preserved Markdown task-list
   markers (`enabled = False`)
 - Emoji rendering and whether the missing font may be downloaded

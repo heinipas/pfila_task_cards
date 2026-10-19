@@ -25,6 +25,11 @@ class TypographyConfig:
     heading_3_scale: float = 1.1
     code_scale: float = 0.85
     line_spacing: float = 1.0
+    # Vertical spacing is expressed as multiples of base_size.
+    metadata_gap_scale: float = 0.0
+    heading_before_scale: float = 1.0
+    heading_after_scale: float = 0.6
+    paragraph_after_scale: float = 0.0
 
 
 @dataclass
@@ -39,7 +44,7 @@ class CheckboxConfig:
 @dataclass
 class EmojiConfig:
     # Render emojis with the local/downloaded Noto Emoji font when enabled.
-    enabled: bool = False
+    enabled: bool = True
     # Download the font automatically when it is not already in the fonts folder.
     download_if_missing: bool = True
 

@@ -452,7 +452,13 @@ def _build_card_story(
         status_line += f'{prefix}<b>{metadata.assignees_title}:</b> {", ".join(names)}'
     if status_line:
         parts.append(Paragraph(status_line, styles["label"]))
-    parts.append(Spacer(1, round(config.typography.base_size * 0.3) * mm))
+    parts.append(Spacer(
+        1,
+        round(
+            config.typography.base_size
+            * config.typography.metadata_gap_scale
+        ),
+    ))
 
     # Description
     desc = card.get("description", "")
@@ -488,26 +494,44 @@ def build_pdf(cards: list[dict], output_path: str, config: RenderConfig = CONFIG
     styles = {
         "title": ParagraphStyle("card_title", parent=sample_styles["Heading1"],
                                 fontName=bold,
-                                fontSize=round(base * typography.title_scale), spaceAfter=round(base * 0.5)),
+                                fontSize=round(base * typography.title_scale),
+                                leading=round(base * typography.line_spacing),
+                                spaceBefore=0,
+                                spaceAfter=round(base * 1.4)),
         "h1": ParagraphStyle("md_h1", parent=sample_styles["Heading2"],
                              fontName=bold,
-                             fontSize=round(base * typography.heading_1_scale), spaceAfter=round(base * 0.4)),
+                             fontSize=round(base * typography.heading_1_scale),
+                             leading=round(base * typography.line_spacing),
+                             spaceBefore=round(base * typography.heading_before_scale),
+                             spaceAfter=round(base * typography.heading_after_scale)),
         "h2": ParagraphStyle("md_h2", parent=sample_styles["Heading3"],
-                             fontSize=round(base * typography.heading_2_scale), spaceAfter=round(base * 0.35)),
+                             fontSize=round(base * typography.heading_2_scale),
+                             leading=round(base * typography.line_spacing),
+                             spaceBefore=round(base * typography.heading_before_scale),
+                             spaceAfter=round(base * typography.heading_after_scale)),
         "h3": ParagraphStyle("md_h3", parent=sample_styles["Heading4"],
-                             fontSize=round(base * typography.heading_3_scale), spaceAfter=round(base * 0.3)),
+                             fontSize=round(base * typography.heading_3_scale),
+                             leading=round(base * typography.line_spacing),
+                             spaceBefore=round(base * typography.heading_before_scale),
+                             spaceAfter=round(base * typography.heading_after_scale)),
         "body": ParagraphStyle("md_body", parent=sample_styles["BodyText"],
                                fontSize=base, leading=round(base * typography.line_spacing),
-                               spaceAfter=round(base * 0.25)),
+                               spaceBefore=0,
+                               spaceAfter=round(base * typography.paragraph_after_scale)),
         "italic": ParagraphStyle("md_italic", parent=sample_styles["BodyText"],
                                  fontSize=base, leading=round(base * typography.line_spacing),
+                                 spaceBefore=0,
+                                 spaceAfter=0,
                                  textColor=colors.grey),
         "code": ParagraphStyle("md_code", parent=sample_styles["Code"],
                                fontSize=round(base * typography.code_scale),
                                leading=round(base * typography.line_spacing),
+                               spaceBefore=0,
+                               spaceAfter=0,
                                backColor=colors.Color(0.95, 0.95, 0.95)),
         "label": ParagraphStyle("label", parent=sample_styles["Normal"],
                                 fontSize=base, textColor=colors.Color(0.3, 0.3, 0.3),
+                                spaceBefore=0,
                                 spaceAfter=0),
     }
 

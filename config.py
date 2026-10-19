@@ -24,11 +24,11 @@ class TypographyConfig:
     heading_2_scale: float = 1.1
     heading_3_scale: float = 1.1
     code_scale: float = 0.85
-    line_spacing: float = 1.0
+    line_spacing: float = 1.1
     # Vertical spacing is expressed as multiples of base_size.
     metadata_gap_scale: float = 0.0
     heading_before_scale: float = 1.0
-    heading_after_scale: float = 0.6
+    heading_after_scale: float = 0.7
     paragraph_after_scale: float = 0.0
 
 
@@ -55,6 +55,9 @@ class TableConfig:
     shade_header: bool = True
     repeat_headers: bool = True
     compact_empty_header: bool = True
+    # Compensate for the text baseline so cell content appears vertically centered.
+    cell_top_padding_scale: float = 0.25
+    cell_bottom_padding_scale: float = 0.55
 
 
 @dataclass

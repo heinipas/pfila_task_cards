@@ -263,20 +263,26 @@ def _table_to_flowable(
             rows.append([Paragraph(c or "\u00a0", cell_style) for c in raw_cells])
 
     fs = cell_style.fontSize
+    top_padding = round(
+        fs * table_config.cell_top_padding_scale
+    )
+    bottom_padding = round(
+        fs * table_config.cell_bottom_padding_scale
+    )
     styles_list = [
         ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("FONTSIZE", (0, 0), (-1, -1), fs),
-        ("LEADING", (0, 0), (-1, -1), round(fs * 1.35)),
-        ("TOPPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
+        ("LEADING", (0, 0), (-1, -1), cell_style.leading),
+        ("TOPPADDING", (0, 0), (-1, -1), top_padding),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), bottom_padding),
         ("LEFTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
         ("RIGHTPADDING", (0, 0), (-1, -1), round(fs * 0.5)),
     ]
     if table_config.shade_header:
         styles_list.append(("BACKGROUND", (0, 0), (-1, 0), colors.Color(0.9, 0.9, 0.9)))
     if header_empty and table_config.compact_empty_header:
-        normal_row = fs * 1.35 + fs * 0.5 + fs * 0.5
+        normal_row = cell_style.leading + top_padding + bottom_padding
         styles_list.append(("ROWHEIGHTS", (0, 0), (-1, 0), round(normal_row * 0.25)))
         styles_list.append(("TOPPADDING", (0, 0), (-1, 0), 0))
         styles_list.append(("BOTTOMPADDING", (0, 0), (-1, 0), 0))

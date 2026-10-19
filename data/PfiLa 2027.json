@@ -150,17 +150,17 @@
           "title": "In Arbeit",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1792354136,
+          "lastModified": 1792399964,
           "cards": [
             {
               "id": 94,
               "title": "Task 2",
-              "description": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n- [x] XY2\n\n# Aufgabe übernommen von\n\n| Name | Handy | Email |\n|------|-------|-------|\n|      |       |       |\n\n# Ansprechperson\n\n| Name | Handy | Email |\n|------|-------|-------|\n|      |       |       |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
+              "description": "# Übersicht\n\n|                                 |                                                         |\n|---------------------------------|---------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen  |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                    |\n| **Ansprechperson**              | Max Muster, 077 777 77 77, max@muster.ch                |\n| **Verantwortlich**              | Pascal Heiniger, 077 403 50 76, pascal@region21.besj.ch |\n\n# Dein Auftrag\n\nXY\n\n## Erledigt, wenn …\n\n- [ ] XY\n- [x] XY2\n\n## Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n## Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n## Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "color": null,
               "descriptionPrev": null,
               "stackId": 28,
               "type": "plain",
-              "lastModified": 1792354136,
+              "lastModified": 1792399964,
               "lastEditor": null,
               "createdAt": 1790346489,
               "labels": [
@@ -220,12 +220,12 @@
               "dependentCards": null,
               "relatedStack": null,
               "relatedBoard": null,
-              "ETag": "759fbd38e428f802560ff0c276a758ca"
+              "ETag": "37c981e9102d92d33946ecca6f5ee589"
             }
           ],
           "order": 2,
           "isDoneColumn": false,
-          "ETag": "759fbd38e428f802560ff0c276a758ca"
+          "ETag": "37c981e9102d92d33946ecca6f5ee589"
         },
         "29": {
           "id": 29,
@@ -243,7 +243,7 @@
               "stackId": 29,
               "type": "plain",
               "lastModified": 1792399456,
-              "lastEditor": "pascal.heiniger",
+              "lastEditor": null,
               "createdAt": 1792351270,
               "labels": [
                 {
@@ -292,11 +292,11 @@
       },
       "activeSessions": [],
       "deletedAt": 0,
-      "lastModified": 1792399456,
+      "lastModified": 1792399964,
       "shareToken": null,
       "externalId": null,
       "settings": [],
-      "ETag": "7b3c8630ceaeb4bacb9e5d2448a81346"
+      "ETag": "37c981e9102d92d33946ecca6f5ee589"
     }
   ]
 }

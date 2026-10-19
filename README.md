@@ -1,6 +1,6 @@
 # pfila_task_cards
 
-Export Nextcloud Deck task cards as a printable PDF (one page per card).
+Export Nextcloud Deck task cards as a printable PDF.
 
 ## Install
 

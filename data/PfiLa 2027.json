@@ -4,6 +4,7 @@
       "id": 8,
       "title": "PfiLa 2027",
       "owner": "sven.gaechter",
+      "teamId": null,
       "color": "0082c9",
       "archived": false,
       "labels": [
@@ -36,12 +37,12 @@
         },
         {
           "id": 44,
-          "title": "⛹🏽‍♂️ Aktiväten",
+          "title": "⚽️ Aktiväten",
           "color": "CCE5FF",
           "boardId": 8,
           "cardId": null,
-          "lastModified": 1786997829,
-          "ETag": "2bf7db5590baccb0265b13009b9208af"
+          "lastModified": 1790345648,
+          "ETag": "5324f08ead1919aa49038ddc7990b22d"
         },
         {
           "id": 59,
@@ -62,7 +63,9 @@
           "permissionEdit": true,
           "permissionShare": true,
           "permissionManage": true,
-          "owner": false
+          "owner": false,
+          "createdAt": 0,
+          "lastModifiedAt": 0
         }
       ],
       "permissions": [],
@@ -73,18 +76,18 @@
           "title": "Pool",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1790344415,
+          "lastModified": 1790348976,
           "cards": [
             {
               "id": 87,
               "title": "VORLAGE - Workshop \"Bibel einfassen\"",
-              "description": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Ansprechperson\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
+              "description": "# Übersicht\n\n|                    |                                                                            |\n|--------------------|----------------------------------------------------------------------------|\n| **Beitrag**        | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen *(mehrere möglich)* |\n| **Aufwand**        | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                                       |\n| **Ansprechperson** | *Name, Handy, Email*                                                       |\n| **Verantwortlich** |                                                                            |\n\n# Dein Auftrag\n\nXY\n\n## Erledigt, wenn …\n\n- [ ] XY\n\n## Termine & Übergaben\n\n| Was                               | Wann                                                 |\n|-----------------------------------|------------------------------------------------------|\n| *Dokument X per Mail an Person Y* | *dd.mm.*                                             |\n| *Material abgeben*                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| *Material wieder abholen*         | *Infos folgen*                                       |\n\n## Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n## Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "color": null,
-              "descriptionPrev": "# Übersicht\n\n|                   |                                                        |\n|-------------------|--------------------------------------------------------|\n| **Beitrag**       | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen | \\\n| *mehrere möglich* |                                                        |\n| **Aufwand**       | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |  |\n|-------------|--|\n| Name        |  |\n| Handynummer |  |\n| Email       |  |\n\n# Ansprechperson\n\n|             |  |\n|-------------|--|\n| Name        |  |\n| Handynummer |  |\n| Email       |  |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
+              "descriptionPrev": null,
               "stackId": 26,
               "type": "plain",
-              "lastModified": 1790344415,
-              "lastEditor": "pascal.heiniger",
+              "lastModified": 1790348976,
+              "lastEditor": null,
               "createdAt": 1786993313,
               "labels": [
                 {
@@ -125,88 +128,144 @@
               "dependentCards": null,
               "relatedStack": null,
               "relatedBoard": null,
-              "ETag": "414eceb39cf94af5c1cfe5b413556ecb"
+              "ETag": "5fde1720d06c2b5c31a486e482dbb68f"
             }
           ],
           "order": 0,
           "isDoneColumn": false,
-          "ETag": "414eceb39cf94af5c1cfe5b413556ecb"
+          "ETag": "5fde1720d06c2b5c31a486e482dbb68f"
         },
         "27": {
           "id": 27,
           "title": "Zugewiesen (nicht gestartet)",
           "boardId": 8,
           "deletedAt": 0,
-          "lastModified": 1790344435,
+          "lastModified": 1790346482,
+          "order": 1,
+          "isDoneColumn": false,
+          "ETag": "19c3ab73e0eb9334ecf35aa56e09b4af"
+        },
+        "28": {
+          "id": 28,
+          "title": "In Arbeit",
+          "boardId": 8,
+          "deletedAt": 0,
+          "lastModified": 1792354136,
           "cards": [
             {
-              "id": 93,
-              "title": "Test2",
-              "description": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Ansprechperson\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
+              "id": 94,
+              "title": "Task 2",
+              "description": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n- [x] XY2\n\n# Aufgabe übernommen von\n\n| Name | Handy | Email |\n|------|-------|-------|\n|      |       |       |\n\n# Ansprechperson\n\n| Name | Handy | Email |\n|------|-------|-------|\n|      |       |       |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
               "color": null,
-              "descriptionPrev": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Ansprechperson\n\n|             |                                                                                |\n|-------------|--------------------------------------------------------------------------------|\n| Name        |                                                                                |\n| Handynummer |                                                                                |\n| Email       |                                                                                |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
-              "stackId": 27,
+              "descriptionPrev": "# Übersicht\n\n|                                 |                                                        |\n|---------------------------------|--------------------------------------------------------|\n| **Beitrag** *(mehrere möglich)* | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen |\n| **Aufwand**                     | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                   |\n\n# Dein Auftrag\n\nXY\n\n# Erledigt, wenn …\n\n- [ ] XY\n\n# Aufgabe übernommen von\n\n| Name | Handy | Email |\n|------|-------|-------|\n|      |       |       |\n\n# Ansprechperson\n\n| Name | Handy | Email |\n|------|-------|-------|\n|      |       |       |\n\n# Termine & Übergaben\n\n| Was                             | Wann                                                 |\n|---------------------------------|------------------------------------------------------|\n| Dokument X per Mail an Person Y | dd.mm.                                               |\n| Material abgeben                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| Material wieder abholen         | *Infos folgen*                                       |\n\n# Budget\n\n*Grundsätzlich gibt es kein regionales Budget. Entstehende Kosten werden entweder selbst übernommen oder über die eigene Jungschar abgerechnet. Grössere Ausgaben bitte vorgängig mit der Ansprechperson klären.*\n\n# Abhängigkeiten\n\n*Du bekommst bis dd.mm. dieses und jenes*",
+              "stackId": 28,
               "type": "plain",
-              "lastModified": 1790344435,
+              "lastModified": 1792354136,
               "lastEditor": "pascal.heiniger",
-              "createdAt": 1790344425,
+              "createdAt": 1790346489,
               "labels": [
                 {
                   "id": 40,
                   "title": "✝️ Geistlich",
                   "color": "FFF2CC",
                   "boardId": 8,
-                  "cardId": 93,
+                  "cardId": 94,
                   "lastModified": 1786997848,
                   "ETag": "ac539cefdb903e2987df54a16d81dd20"
                 },
                 {
-                  "id": 41,
-                  "title": "🎭 Thema",
-                  "color": "D5E8D4",
-                  "boardId": 8,
-                  "cardId": 93,
-                  "lastModified": 1786997845,
-                  "ETag": "93da611ef564fac6225fe44ce642539b"
-                },
-                {
-                  "id": 43,
-                  "title": "⛺️ Platz",
-                  "color": "F8CECC",
-                  "boardId": 8,
-                  "cardId": 93,
-                  "lastModified": 1786997835,
-                  "ETag": "10036132e9048281764917e3203d8d39"
-                },
-                {
                   "id": 44,
-                  "title": "⛹🏽‍♂️ Aktiväten",
+                  "title": "⚽️ Aktiväten",
                   "color": "CCE5FF",
                   "boardId": 8,
-                  "cardId": 93,
-                  "lastModified": 1786997829,
-                  "ETag": "2bf7db5590baccb0265b13009b9208af"
+                  "cardId": 94,
+                  "lastModified": 1790345648,
+                  "ETag": "5324f08ead1919aa49038ddc7990b22d"
                 },
                 {
                   "id": 59,
                   "title": "🎨 Diverses",
                   "color": "CCCCCC",
                   "boardId": 8,
-                  "cardId": 93,
+                  "cardId": 94,
                   "lastModified": 1786997943,
                   "ETag": "f6bc98a390fb5325a0753aec00411e46"
                 }
               ],
               "assignedUsers": [
                 {
-                  "id": 8,
+                  "id": 9,
                   "participant": {
                     "primaryKey": "pascal.heiniger",
                     "uid": "pascal.heiniger",
                     "displayname": "Pascal Heiniger",
                     "type": 0
                   },
-                  "cardId": 93,
+                  "cardId": 94,
+                  "type": 0
+                }
+              ],
+              "attachments": [],
+              "attachmentCount": 0,
+              "owner": "pascal.heiniger",
+              "order": 0,
+              "archived": false,
+              "done": null,
+              "duedate": null,
+              "startdate": null,
+              "notified": false,
+              "deletedAt": 0,
+              "commentsUnread": 0,
+              "commentsCount": 0,
+              "dependentCards": null,
+              "relatedStack": null,
+              "relatedBoard": null,
+              "ETag": "759fbd38e428f802560ff0c276a758ca"
+            }
+          ],
+          "order": 2,
+          "isDoneColumn": false,
+          "ETag": "759fbd38e428f802560ff0c276a758ca"
+        },
+        "29": {
+          "id": 29,
+          "title": "Blockiert / braucht Entscheidung",
+          "boardId": 8,
+          "deletedAt": 0,
+          "lastModified": 1792351289,
+          "cards": [
+            {
+              "id": 100,
+              "title": "Test 4",
+              "description": "# Übersicht\n\n|                    |                                                                            |\n|--------------------|----------------------------------------------------------------------------|\n| **Beitrag**        | 📝 Vorbereiten  ·  📦 Organisieren  ·  🏕️ Durchführen *(mehrere möglich)* |\n| **Aufwand**        | 🪶 Klein  ·  🛠️ Mittel  ·  🧗 Gross                                       |\n| **Ansprechperson** | *Name, Handy, Email*                                                       |\n| **Verantwortlich** |                                                                            |\n\n# Dein Auftrag\n\nXY\n\n## Erledigt, wenn …\n\n- [ ] XY\n\n## Termine & Übergaben\n\n| Was                               | Wann                                                 |\n|-----------------------------------|------------------------------------------------------|\n| *Dokument X per Mail an Person Y* | *dd.mm.*                                             |\n| *Material abgeben*                | *Im Pfila am Samstag nach dem Nacht im grossen Zelt* |\n| *Material wieder abholen*         | *Infos folgen*                                       |\n",
+              "color": null,
+              "descriptionPrev": null,
+              "stackId": 29,
+              "type": "plain",
+              "lastModified": 1792351289,
+              "lastEditor": null,
+              "createdAt": 1792351270,
+              "labels": [
+                {
+                  "id": 43,
+                  "title": "⛺️ Platz",
+                  "color": "F8CECC",
+                  "boardId": 8,
+                  "cardId": 100,
+                  "lastModified": 1786997835,
+                  "ETag": "10036132e9048281764917e3203d8d39"
+                }
+              ],
+              "assignedUsers": [
+                {
+                  "id": 10,
+                  "participant": {
+                    "primaryKey": "pascal.heiniger",
+                    "uid": "pascal.heiniger",
+                    "displayname": "Pascal Heiniger",
+                    "type": 0
+                  },
+                  "cardId": 100,
                   "type": 0
                 }
               ],
@@ -225,32 +284,12 @@
               "dependentCards": null,
               "relatedStack": null,
               "relatedBoard": null,
-              "ETag": "7d418e9bfe6273e33a5261ea5ea6c76d"
+              "ETag": "6eba0773e14424ab56c1f1b2ff3ed60f"
             }
           ],
-          "order": 1,
-          "isDoneColumn": false,
-          "ETag": "7d418e9bfe6273e33a5261ea5ea6c76d"
-        },
-        "28": {
-          "id": 28,
-          "title": "In Arbeit",
-          "boardId": 8,
-          "deletedAt": 0,
-          "lastModified": 1790343886,
-          "order": 2,
-          "isDoneColumn": false,
-          "ETag": "483f5478aa362314b38a2cc97a10e269"
-        },
-        "29": {
-          "id": 29,
-          "title": "Blockiert / braucht Entscheidung",
-          "boardId": 8,
-          "deletedAt": 0,
-          "lastModified": 1790343888,
           "order": 3,
           "isDoneColumn": false,
-          "ETag": "b939ed36af0847efb295c261caaed6fa"
+          "ETag": "6eba0773e14424ab56c1f1b2ff3ed60f"
         },
         "30": {
           "id": 30,
@@ -265,11 +304,11 @@
       },
       "activeSessions": [],
       "deletedAt": 0,
-      "lastModified": 1790344435,
+      "lastModified": 1792354136,
       "shareToken": null,
       "externalId": null,
       "settings": [],
-      "ETag": "7d418e9bfe6273e33a5261ea5ea6c76d"
+      "ETag": "759fbd38e428f802560ff0c276a758ca"
     }
   ]
 }

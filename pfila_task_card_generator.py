@@ -15,8 +15,10 @@ import sys
 
 import markdown
 from reportlab.lib import colors
+from reportlab.lib.fonts import tt2ps
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
+from reportlab.rl_config import canvas_basefontname as _baseFontName
 from reportlab.platypus import (
     Flowable,
     PageBreak,
@@ -26,6 +28,11 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+
+
+# ── Configuration ───────────────────────────────────────────────────────────
+
+EVEN_PAGE_CARDS = False  # pad every card to an even page count (double-sided printing)
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -109,6 +116,32 @@ def process_emojis(text: str) -> str:
             return f'<font name="{_EMOJI_FONT_NAME}">{m.group(0)}</font>'
         return _EMOJI_RE.sub(_wrap, text)
     return _EMOJI_RE.sub("", text)
+
+
+
+class CheckBox(Flowable):
+    """A small vector checkbox – drawn directly, no fonts or images needed."""
+
+    def __init__(self, checked: bool = False, size: float = 7):
+        super().__init__()
+        self.checked = checked
+        self.size = size
+
+    def wrap(self, availWidth, availHeight):
+        return self.size + 2, self.size + 2
+
+    def draw(self):
+        c = self.canv
+        c.setLineWidth(0.6)
+        c.setStrokeColor(colors.black)
+        c.setFillColor(colors.white)
+        c.rect(0, 0, self.size, self.size, fill=1, stroke=1)
+        if self.checked:
+            s = self.size
+            c.setLineWidth(0.9)
+            # checkmark: short stroke up-right, then longer stroke
+            c.line(s * 0.2, s * 0.45, s * 0.42, s * 0.25)
+            c.line(s * 0.42, s * 0.25, s * 0.82, s * 0.75)
 
 
 # ── Horizontal rule ─────────────────────────────────────────────────────────
@@ -239,14 +272,12 @@ def _table_to_flowable(table_html: str, cell_style, avail_width: float) -> Flowa
 
     t = Table(rows, colWidths=col_widths, repeatRows=1)
     t.setStyle(TableStyle(styles_list))
+    t.hAlign = "LEFT"
     return t
 
 
-def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
-    """Convert a markdown string into a list of ReportLab flowables."""
-    if not md_text or not md_text.strip():
-        return [Paragraph("<i>No description</i>", styles["italic"])]
-
+def _md_segment_to_flowables(md_text: str, styles, avail_width: float) -> list:
+    """Render one markdown segment (without headings) into flowables."""
     html = markdown.markdown(md_text, extensions=["tables", "fenced_code"])
 
     # Convert markdown HTML tags to ReportLab-compatible tags
@@ -255,14 +286,6 @@ def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
 
     # Apply emoji rendering AFTER markdown→HTML conversion
     html = process_emojis(html)
-
-    # Task-list checkboxes: - [ ] → ☐, - [x] → ☑
-    if _emoji_font_registered:
-        _box_font = f'<font name="{_EMOJI_FONT_NAME}">'
-        html = html.replace("[ ]", f"{_box_font}\u2610</font>")
-        html = re.sub(r"\[[xX]\]", f"{_box_font}\u2611</font>", html)
-    else:
-        html = html.replace("[ ]", "\u2610").replace("[x]", "\u2611").replace("[X]", "\u2611")
 
     flowables: list = []
 
@@ -273,19 +296,36 @@ def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
             continue
         if stripped.startswith("<table"):
             flowables.append(_table_to_flowable(stripped, styles["body"], avail_width))
-        elif stripped.startswith("<h1"):
-            flowables.append(Paragraph(stripped, styles["h1"]))
-        elif stripped.startswith("<h2"):
-            flowables.append(Paragraph(stripped, styles["h2"]))
-        elif stripped.startswith("<h3"):
-            flowables.append(Paragraph(stripped, styles["h3"]))
+        elif stripped.startswith("<h"):
+            m = re.match(r"<h([1-3])>", stripped)
+            level = m.group(1) if m else "3"
+            inner = re.sub(r"</?h[1-6]>", "", stripped)
+            flowables.append(Paragraph(inner, styles[f"h{level}"]))
         elif stripped.startswith(("<ul", "<ol")):
             flowables.append(Paragraph(stripped, styles["body"]))
         elif stripped.startswith("<li"):
-            flowables.append(Paragraph(
-                "  • " + stripped.replace("<li>", "").replace("</li>", ""),
-                styles["body"],
-            ))
+            text = stripped.replace("<li>", "").replace("</li>", "").strip()
+            m = re.match(r"^\[([ xX])\]\s*", text)
+            if m:
+                # Task-list item: render a real checkbox before the text
+                checked = m.group(1).lower() == "x"
+                text = text[m.end():]
+                box_w = 14  # checkbox column width
+                t = Table(
+                    [[CheckBox(checked), Paragraph(text or "\u00a0", styles["body"])]],
+                    colWidths=[box_w, avail_width - box_w - 4],
+                )
+                t.setStyle(TableStyle([
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                ]))
+                t.hAlign = "LEFT"
+                flowables.append(t)
+            else:
+                flowables.append(Paragraph("  • " + text, styles["body"]))
         elif stripped.startswith("<p"):
             inner = stripped.replace("<p>", "").replace("</p>", "")
             flowables.append(Paragraph(inner, styles["body"]))
@@ -299,6 +339,40 @@ def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
         else:
             flowables.append(Paragraph(stripped, styles["body"]))
 
+    return flowables
+
+
+def md_to_flowables(md_text: str, styles, avail_width: float) -> list:
+    """Convert a markdown string into a list of ReportLab flowables."""
+    if not md_text or not md_text.strip():
+        return [Paragraph("<i>No description</i>", styles["italic"])]
+
+    # Split the raw markdown at ATX headings (# ...), so headings are always
+    # rendered as headings regardless of markdown's block-context handling
+    parts: list[tuple[str, object]] = []
+    buf: list[str] = []
+    in_fence = False
+    for line in md_text.split("\n"):
+        if line.strip().startswith("```"):
+            in_fence = not in_fence
+        m = None if in_fence else re.match(r"^(\s*)(#{1,6})\s+(.*)$", line)
+        if m:
+            if buf:
+                parts.append(("md", "\n".join(buf)))
+                buf = []
+            parts.append(("h", (min(len(m.group(2)), 3), m.group(3).strip())))
+        else:
+            buf.append(line)
+    if buf:
+        parts.append(("md", "\n".join(buf)))
+
+    flowables: list = []
+    for kind, payload in parts:
+        if kind == "h":
+            level, text = payload
+            flowables.append(Paragraph(process_emojis(text), styles[f"h{level}"]))
+        else:
+            flowables.extend(_md_segment_to_flowables(payload, styles, avail_width))
     return flowables
 
 
@@ -356,10 +430,13 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
     # ── Styles ──────────────────────────────────────────────────────────
     base = 9
     sample_styles = getSampleStyleSheet()
+    bold = tt2ps(_baseFontName, 1, 0)
     styles = {
         "title": ParagraphStyle("card_title", parent=sample_styles["Heading1"],
+                                fontName=bold,
                                 fontSize=round(base * 1.3), spaceAfter=round(base * 0.5)),
         "h1": ParagraphStyle("md_h1", parent=sample_styles["Heading2"],
+                             fontName=bold,
                              fontSize=round(base * 1.2), spaceAfter=round(base * 0.4)),
         "h2": ParagraphStyle("md_h2", parent=sample_styles["Heading3"],
                              fontSize=round(base * 1.1), spaceAfter=round(base * 0.35)),
@@ -436,6 +513,7 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
 
     # ── Pass 2: build final PDF, padding odd cards to even page counts ───
     padded_counts = [c + (c % 2) for c in real_counts]  # round up to even
+    total_counts = padded_counts if EVEN_PAGE_CARDS else real_counts
 
     class _FooterCanvas(_canvas_mod.Canvas):
         def __init__(self, *a, **kw):
@@ -457,15 +535,25 @@ def build_pdf(cards: list[dict], output_path: str) -> None:
             title = card_titles[self._card_idx] if 0 <= self._card_idx < len(card_titles) else ""
             if title:
                 self.drawString(margin, 8 * mm, title)
-            total = padded_counts[self._card_idx] if 0 <= self._card_idx < len(padded_counts) else "?"
+            total = total_counts[self._card_idx] if 0 <= self._card_idx < len(total_counts) else "?"
             self.drawRightString(w - margin, 8 * mm, f"Seite {self._card_page}/{total}")
+        def save(self):
+            # Safety net: ReportLab can swallow a trailing PageBreak, so add
+            # the padding blank page here if it is still missing.
+            if (EVEN_PAGE_CARDS and self._card_idx >= 0
+                    and self._card_idx < len(padded_counts)
+                    and self._card_page < padded_counts[self._card_idx]):
+                self._card_page += 1
+                self._draw_footer()
+                super().showPage()
+            super().save()
 
     doc = SimpleDocTemplate(
         output_path, pagesize=_A5,
         leftMargin=margin, rightMargin=margin,
         topMargin=margin, bottomMargin=bottom_margin,
     )
-    doc.build(_assemble(True), canvasmaker=_FooterCanvas)
+    doc.build(_assemble(EVEN_PAGE_CARDS), canvasmaker=_FooterCanvas)
 
 
 # ── CLI helpers ──────────────────────────────────────────────────────────────
